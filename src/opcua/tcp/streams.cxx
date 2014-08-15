@@ -217,17 +217,29 @@ opc_ua::tcp::MessageStream::~MessageStream()
 {
 }
 
-void opc_ua::tcp::MessageStream::request_secure_channel()
+void opc_ua::tcp::MessageStream::write_message(Message& msg, MessageType msg_type)
 {
 	TemporarySerializationContext sctx;
 	BinarySerializer srl;
 
-	AsymmetricAlgorithmSecurityHeader sech = {
-		.security_policy_uri = "http://opcfoundation.org/UA/SecurityPolicy#None",
-		.sender_certificate = "",
-		.receiver_certificate_thumbprint = "",
-	};
-	srl.serialize(sctx, sech);
+	// OPN message takes asymmetric header
+	// MSG & CLO take symmetric header
+	if (msg_type == MessageType::OPN)
+	{
+		AsymmetricAlgorithmSecurityHeader sech = {
+			.security_policy_uri = "http://opcfoundation.org/UA/SecurityPolicy#None",
+			.sender_certificate = "",
+			.receiver_certificate_thumbprint = "",
+		};
+		srl.serialize(sctx, sech);
+	}
+	else
+	{
+		SymmetricAlgorithmSecurityHeader sech = {
+			.token_id = token_id,
+		};
+		srl.serialize(sctx, sech);
+	}
 
 	SequenceHeader seqh = {
 		.sequence_number = sequence_number++,
@@ -235,16 +247,21 @@ void opc_ua::tcp::MessageStream::request_secure_channel()
 	};
 	srl.serialize(sctx, seqh);
 
-	channel_request_id = seqh.request_id;
+	NodeId msg_id(id_mapping.at(msg.node_id()));
+	srl.serialize(sctx, msg_id);
+	srl.serialize(sctx, msg);
+
+	ts.write_message(msg_type, MessageIsFinal::FINAL, sctx);
+}
+
+void opc_ua::tcp::MessageStream::request_secure_channel()
+{
+	channel_request_id = sequence_number;
 
 	OpenSecureChannelRequest req(channel_request_id, SecurityTokenRequestType::ISSUE,
 			MessageSecurityMode::NONE, "", 360000);
-	NodeId req_id(id_mapping.at(req.node_id()));
 
-	srl.serialize(sctx, req_id);
-	srl.serialize(sctx, req);
-
-	ts.write_message(MessageType::OPN, MessageIsFinal::FINAL, sctx);
+	write_message(req, MessageType::OPN);
 }
 
 bool opc_ua::tcp::MessageStream::process_secure_channel_response(SerializationContext& sctx, UInt32 channel_id)
@@ -279,27 +296,7 @@ bool opc_ua::tcp::MessageStream::process_secure_channel_response(SerializationCo
 
 void opc_ua::tcp::MessageStream::close()
 {
-	TemporarySerializationContext sctx;
-	BinarySerializer srl;
+	CloseSecureChannelRequest req(next_request_id);
 
-	SymmetricAlgorithmSecurityHeader sech = {
-		.token_id = token_id,
-	};
-	srl.serialize(sctx, sech);
-
-	SequenceHeader seqh = {
-		.sequence_number = sequence_number++,
-		.request_id = next_request_id++,
-	};
-	srl.serialize(sctx, seqh);
-
-	CloseSecureChannelRequest req(seqh.request_id);
-	NodeId req_id(id_mapping.at(req.node_id()));
-
-	srl.serialize(sctx, req_id);
-	srl.serialize(sctx, req);
-
-	srl.serialize(sctx, Byte(0));
-
-	ts.write_message(MessageType::CLO, MessageIsFinal::FINAL, sctx, secure_channel_id);
+	write_message(req, MessageType::CLO);
 }

@@ -86,6 +86,8 @@ namespace opc_ua
 			MessageStream(TransportStream& new_ts);
 			~MessageStream();
 
+			void write_message(Message& msg, MessageType msg_type = MessageType::MSG);
+
 			// write secure channel request
 			void request_secure_channel();
 			// process secure channel response
