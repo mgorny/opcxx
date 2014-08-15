@@ -9,6 +9,7 @@ noinst_HEADERS = \
 	src/opcua/common/struct.hxx \
 	src/opcua/common/types.hxx \
 	src/opcua/common/util.hxx \
+	src/opcua/tcp/ids.hxx \
 	src/opcua/tcp/streams.hxx \
 	src/opcua/tcp/types.hxx
 

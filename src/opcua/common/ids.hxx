@@ -8,18 +8,26 @@
 #ifndef OPCUA_COMMON_IDS_HXX
 #define OPCUA_COMMON_IDS_HXX 1
 
+#include <opcua/common/struct.hxx>
+
+#include <stdexcept>
+
 namespace opc_ua
 {
-	// TODO: namespace this, different encodings use different ids...
-	enum class NumericNodeId
+	template <typename T>
+	constexpr inline UInt32 NumericNodeId(const T&)
 	{
-		NONE = 0,
+		return 0;
+	}
 
-		OPEN_SECURE_CHANNEL_REQUEST = 446,
-		OPEN_SECURE_CHANNEL_RESPONSE = 449,
-		CLOSE_SECURE_CHANNEL_REQUEST = 452,
-		CLOSE_SECURE_CHANNEL_RESPONSE = 455,
-	};
+	template <>
+	constexpr inline UInt32 NumericNodeId(const OpenSecureChannelRequest& T) { return 444; }
+	template <>
+	constexpr inline UInt32 NumericNodeId(const OpenSecureChannelResponse& T) { return 447; }
+	template <>
+	constexpr inline UInt32 NumericNodeId(const CloseSecureChannelRequest& T) { return 450; }
+	template <>
+	constexpr inline UInt32 NumericNodeId(const CloseSecureChannelResponse& T) { return 453; }
 };
 
 #endif /*OPCUA_COMMON_IDS_HXX*/
