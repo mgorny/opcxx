@@ -5,11 +5,11 @@
 
 #pragma once
 
-#ifndef STRUCT_HXX
-#define STRUCT_HXX 1
+#ifndef OPCUA_COMMON_STRUCT_HXX
+#define OPCUA_COMMON_STRUCT_HXX 1
 
-#include <opcua/types.hxx>
-#include <opcua/util.hxx>
+#include <opcua/common/types.hxx>
+#include <opcua/common/util.hxx>
 
 namespace opc_ua
 {
@@ -133,4 +133,4 @@ namespace opc_ua
 	typedef ResponseHeader CloseSecureChannelResponse;
 };
 
-#endif /*STRUCT_HXX*/
+#endif /*OPCUA_COMMON_STRUCT_HXX*/

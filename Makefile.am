@@ -5,20 +5,22 @@ AM_CPPFLAGS = \
 	-I$(srcdir)/src
 
 noinst_HEADERS = \
-	src/opcua/ids.hxx \
-	src/opcua/struct.hxx \
-	src/opcua/tcp.hxx \
-	src/opcua/types.hxx \
-	src/opcua/util.hxx
+	src/opcua/common/ids.hxx \
+	src/opcua/common/struct.hxx \
+	src/opcua/common/types.hxx \
+	src/opcua/common/util.hxx \
+	src/opcua/tcp/streams.hxx \
+	src/opcua/tcp/types.hxx
 
 lib_LTLIBRARIES = libopcua.la
 noinst_PROGRAMS = test
 
 libopcua_la_SOURCES = \
-	src/opcua/struct.cxx \
-	src/opcua/tcp.cxx \
-	src/opcua/types.cxx \
-	src/opcua/util.cxx \
+	src/opcua/common/struct.cxx \
+	src/opcua/common/types.cxx \
+	src/opcua/common/util.cxx \
+	src/opcua/tcp/streams.cxx \
+	src/opcua/tcp/types.cxx \
 	$(noinst_HEADERS)
 libopcua_la_CPPFLAGS = \
 	$(LIBEVENT_CFLAGS) \

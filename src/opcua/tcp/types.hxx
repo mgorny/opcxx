@@ -5,20 +5,12 @@
 
 #pragma once
 
-#ifndef TCP_HXX
-#define TCP_HXX 1
+#ifndef OPCUA_TCP_TYPES_HXX
+#define OPCUA_TCP_TYPES_HXX 1
 
-#include <event2/bufferevent.h>
-#include <event2/event.h>
-
-#include <opcua/struct.hxx>
-#include <opcua/types.hxx>
-#include <opcua/util.hxx>
-
-#include <exception>
-#include <map>
-
-#include <sys/socket.h>
+#include <opcua/common/struct.hxx>
+#include <opcua/common/types.hxx>
+#include <opcua/common/util.hxx>
 
 namespace opc_ua
 {
@@ -193,77 +185,7 @@ namespace opc_ua
 			void unserialize(SerializationContext& ctx, AsymmetricAlgorithmSecurityHeader& h);
 			void unserialize(SerializationContext& ctx, SequenceHeader& h);
 		};
-
-		// (opaque)
-		class MessageStream;
-
-		// Basic OPC UA TCP transport stream. Handles connecting and message
-		// headers.
-		class TransportStream
-		{
-			bufferevent* bev;
-			SerializationContext in_ctx, out_ctx;
-
-			// current state
-			bool connected;
-			bool got_header;
-			MessageHeader h;
-
-			// remote side limits
-			AcknowledgeMessage remote_limits;
-
-			// secure channels
-			std::map<UInt32, MessageStream*> secure_channels;
-			std::vector<MessageStream*> secure_channel_queue;
-
-			static void read_handler(bufferevent* bev, void* ctx);
-			static void event_handler(bufferevent* bev, short what, void* ctx);
-
-		public:
-			TransportStream(event_base* ev);
-			~TransportStream();
-
-			void connect_hostname(const char* hostname, uint16_t port, const char* endpoint, sa_family_t family = AF_UNSPEC);
-			void write_message(MessageType msg_type, MessageIsFinal is_final, SerializationContext& msg, UInt32 secure_channel_id = 0);
-
-			// Queue a request for secure channel.
-			void add_secure_channel(MessageStream& ms);
-		};
-
-		// Wrapper stream that splits, encodes and transmits OPC messages.
-		class MessageStream
-		{
-			TransportStream& ts;
-
-			// sequential number source
-			static UInt32 sequence_number;
-			static UInt32 next_request_id;
-
-			// OPN request identifier
-			UInt32 channel_request_id;
-			// secure channel id for write_message()
-			UInt32 secure_channel_id;
-			// security token id for further messages
-			UInt32 token_id;
-
-		protected:
-			// Method called once MessageStream successfully establishes
-			// secure channel. Needs to be overriden by subclass.
-			virtual void on_connected() = 0;
-
-		public:
-			MessageStream(TransportStream& new_ts);
-			~MessageStream();
-
-			// write secure channel request
-			void request_secure_channel();
-			// process secure channel response
-			// return true if it matches our request
-			bool process_secure_channel_response(SerializationContext& buf, UInt32 channel_id);
-			// request closing secure channel
-			void close();
-		};
 	};
 };
 
-#endif /*TCP_HXX*/
+#endif /*OPCUA_TCP_TYPES_HXX*/

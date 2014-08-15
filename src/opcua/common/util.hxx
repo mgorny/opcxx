@@ -5,8 +5,8 @@
 
 #pragma once
 
-#ifndef UTIL_HXX
-#define UTIL_HXX 1
+#ifndef OPCUA_COMMON_UTIL_HXX
+#define OPCUA_COMMON_UTIL_HXX 1
 
 #include <event2/buffer.h>
 
@@ -52,4 +52,4 @@ namespace opc_ua
 	};
 };
 
-#endif /*UTIL_HXX*/
+#endif /*OPCUA_COMMON_UTIL_HXX*/

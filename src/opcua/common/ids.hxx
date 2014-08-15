@@ -5,8 +5,8 @@
 
 #pragma once
 
-#ifndef IDS_HXX
-#define IDS_HXX 1
+#ifndef OPCUA_COMMON_IDS_HXX
+#define OPCUA_COMMON_IDS_HXX 1
 
 namespace opc_ua
 {
@@ -22,4 +22,4 @@ namespace opc_ua
 	};
 };
 
-#endif /*IDS_HXX*/
+#endif /*OPCUA_COMMON_IDS_HXX*/

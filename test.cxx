@@ -2,10 +2,10 @@
 #	include "config.h"
 #endif
 
-#include <opcua/struct.hxx>
-#include <opcua/tcp.hxx>
-#include <opcua/types.hxx>
-#include <opcua/util.hxx>
+#include <opcua/common/struct.hxx>
+#include <opcua/tcp/streams.hxx>
+#include <opcua/common/types.hxx>
+#include <opcua/common/util.hxx>
 
 #include <event2/bufferevent.h>
 #include <event2/buffer.h>

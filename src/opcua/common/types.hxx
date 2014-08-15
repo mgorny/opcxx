@@ -5,15 +5,15 @@
 
 #pragma once
 
-#ifndef TYPES_HXX
-#define TYPES_HXX 1
+#ifndef OPCUA_COMMON_TYPES_HXX
+#define OPCUA_COMMON_TYPES_HXX 1
 
 #include <cstdint>
 #include <ctime>
 #include <string>
 #include <vector>
 
-#include <opcua/util.hxx>
+#include <opcua/common/util.hxx>
 
 namespace opc_ua
 {
@@ -105,4 +105,4 @@ namespace opc_ua
 	};
 };
 
-#endif /*TYPES_HXX*/
+#endif /*OPCUA_COMMON_TYPES_HXX*/
