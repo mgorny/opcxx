@@ -51,3 +51,8 @@ opc_ua::TemporarySerializationContext::~TemporarySerializationContext()
 {
 	evbuffer_free(_buf);
 }
+
+void opc_ua::TemporarySerializationContext::clear()
+{
+	evbuffer_drain(_buf, size());
+}

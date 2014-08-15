@@ -16,7 +16,7 @@
 #include <opcua/util.hxx>
 
 #include <exception>
-#include <functional>
+#include <map>
 
 #include <sys/socket.h>
 
@@ -193,29 +193,27 @@ namespace opc_ua
 			void unserialize(SerializationContext& ctx, SequenceHeader& h);
 		};
 
+		// (opaque)
+		class MessageStream;
+
 		// Basic OPC UA TCP transport stream. Handles connecting and message
 		// headers.
 		class TransportStream
 		{
-		public:
-			typedef std::function<void(void* data)> ack_callback_type;
-			typedef std::function<void(const MessageHeader& h, SerializationContext& ctx, void* data)> msg_callback_type;
-
-		private:
 			bufferevent* bev;
 			SerializationContext in_ctx, out_ctx;
 
 			// current state
+			bool connected;
 			bool got_header;
 			MessageHeader h;
 
 			// remote side limits
 			AcknowledgeMessage remote_limits;
 
-			// callbacks
-			ack_callback_type ack_callback;
-			msg_callback_type msg_callback;
-			void* callback_data;
+			// secure channels
+			std::map<UInt32, MessageStream*> secure_channels;
+			std::vector<MessageStream*> secure_channel_queue;
 
 			static void read_handler(bufferevent* bev, void* ctx);
 
@@ -226,29 +224,33 @@ namespace opc_ua
 			void connect_hostname(const char* hostname, uint16_t port, const char* endpoint, sa_family_t family = AF_UNSPEC);
 			void write_message(MessageType msg_type, MessageIsFinal is_final, SerializationContext& msg);
 
-			void set_callbacks(ack_callback_type ack_cb, msg_callback_type msg_cb, void* cb_data);
+			// Queue a request for secure channel.
+			void add_secure_channel(MessageStream& ms);
 		};
 
 		// Wrapper stream that splits, encodes and transmits OPC messages.
 		class MessageStream
 		{
-			TransportStream ts;
+			TransportStream& ts;
 
 			// sequential number source
-			UInt32 sequence_number;
-			UInt32 next_request_id;
+			static UInt32 sequence_number;
+			static UInt32 next_request_id;
 
-			// secure channel id
-			UInt32 secure_channel_id;
+			// secure channel request handle
+			UInt32 request_handle;
 
-			static void start_secure_conversation(void* data);
 			static void handle_message(const MessageHeader& h, SerializationContext& ctx, void* data);
 
 		public:
-			MessageStream(event_base* ev);
+			MessageStream(TransportStream& new_ts);
 			~MessageStream();
 
-			void connect_hostname(const char* hostname, uint16_t port, const char* endpoint, sa_family_t family = AF_UNSPEC);
+			// write secure channel request
+			void request_secure_channel();
+			// process secure channel response
+			// return true if it matches our request
+			bool process_secure_channel_response(SerializationContext& buf);
 		};
 	};
 };

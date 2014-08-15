@@ -15,8 +15,14 @@
 #include <cstdlib>
 #include <stdexcept>
 
+#warning "remove me"
+#include <iostream>
+
 // Unix Epoch offset in seconds
 static opc_ua::Int64 unix_epoch_s = 11644478640;
+
+opc_ua::UInt32 opc_ua::tcp::MessageStream::sequence_number = 0;
+opc_ua::UInt32 opc_ua::tcp::MessageStream::next_request_id = 0;
 
 void opc_ua::tcp::BinarySerializer::serialize(SerializationContext& ctx, Byte i)
 {
@@ -380,7 +386,7 @@ opc_ua::tcp::TransportStream::TransportStream(event_base* ev)
 	: bev(bufferevent_socket_new(ev, -1, BEV_OPT_CLOSE_ON_FREE)),
 	in_ctx(bufferevent_get_input(bev)),
 	out_ctx(bufferevent_get_output(bev)),
-	got_header(false)
+	connected(false), got_header(false)
 {
 	assert(bev);
 
@@ -436,6 +442,8 @@ void opc_ua::tcp::TransportStream::read_handler(bufferevent* bev, void* ctx)
 	if (s->in_ctx.size() < s->h.message_size - s->h.serialized_length)
 		return;
 
+	// TODO: do not allow reading past message_size
+
 	// process the message
 	switch (s->h.message_type)
 	{
@@ -443,8 +451,10 @@ void opc_ua::tcp::TransportStream::read_handler(bufferevent* bev, void* ctx)
 		{
 			srl.unserialize(s->in_ctx, s->remote_limits);
 
-			assert(s->ack_callback);
-			s->ack_callback(s->callback_data);
+			s->connected = true;
+			// push queued requests
+			for (auto ms : s->secure_channel_queue)
+				ms->request_secure_channel();
 
 			break;
 		}
@@ -458,8 +468,42 @@ void opc_ua::tcp::TransportStream::read_handler(bufferevent* bev, void* ctx)
 			break;
 		}
 
+		case MessageType::OPN:
+		{
+			TemporarySerializationContext buffer;
+			UInt32 secure_channel_id;
+			srl.unserialize(s->in_ctx, secure_channel_id);
+
+			for (auto i = s->secure_channel_queue.begin();; ++i)
+			{
+				if (i == s->secure_channel_queue.end())
+					throw std::runtime_error("Received open secure channel response with no matching request");
+
+				MessageStream* ms = *i;
+
+				// copy the current input into the buffer
+				//buffer.clear();
+				//buffer.write(s->in_ctx);
+
+				if (ms->process_secure_channel_response(s->in_ctx))
+				{
+					// request matched, let's activate the channel
+					s->secure_channel_queue.erase(i);
+					s->secure_channels[secure_channel_id] = ms;
+					break;
+				}
+			}
+
+			break;
+		}
+
+		case MessageType::CLO:
+		case MessageType::MSG:
+//			s->msg_callback(s->h, s->in_ctx, s->callback_data);
+			break;
+
 		default:
-			s->msg_callback(s->h, s->in_ctx, s->callback_data);
+			assert(not_reached);
 	}
 
 	// prepare for the next message
@@ -468,47 +512,62 @@ void opc_ua::tcp::TransportStream::read_handler(bufferevent* bev, void* ctx)
 
 void opc_ua::tcp::TransportStream::write_message(MessageType msg_type, MessageIsFinal is_final, SerializationContext& msg)
 {
-	MessageHeader h;
 	BinarySerializer srl;
 
-	h.message_type = msg_type;
-	h.is_final = is_final;
-	h.message_size = h.serialized_length + msg.size();
+	switch (msg_type)
+	{
+		case MessageType::HEL:
+		case MessageType::ACK:
+		case MessageType::ERR:
+		{
+			MessageHeader h;
+			h.message_type = msg_type;
+			h.is_final = is_final;
+			h.message_size = h.serialized_length + msg.size();
+			srl.serialize(out_ctx, h);
+			break;
+		}
+		case MessageType::OPN:
+		case MessageType::CLO:
+		case MessageType::MSG:
+		{
+			SecureConversationMessageHeader h;
+			h.message_type = msg_type;
+			h.is_final = is_final;
+			h.message_size = h.serialized_length + msg.size();
+			// TODO: real id for CLO & MSG
+			h.secure_channel_id = 0;
+			srl.serialize(out_ctx, h);
+			break;
+		}
+		default:
+			assert(not_reached);
+	}
 
-	srl.serialize(out_ctx, h);
 	out_ctx.write(msg);
 }
 
-void opc_ua::tcp::TransportStream::set_callbacks(ack_callback_type ack_cb, msg_callback_type msg_cb, void* cb_data)
+void opc_ua::tcp::TransportStream::add_secure_channel(MessageStream& ms)
 {
-	ack_callback = ack_cb;
-	msg_callback = msg_cb;
-	callback_data = cb_data;
+	secure_channel_queue.push_back(&ms);
+	if (connected)
+		ms.request_secure_channel();
 }
 
-opc_ua::tcp::MessageStream::MessageStream(event_base* ev)
-	: ts(ev), sequence_number(0), next_request_id(0)
+opc_ua::tcp::MessageStream::MessageStream(TransportStream& new_ts)
+	: ts(new_ts)
 {
-	ts.set_callbacks(start_secure_conversation, handle_message, this);
+	ts.add_secure_channel(*this);
 }
 
 opc_ua::tcp::MessageStream::~MessageStream()
 {
 }
 
-void opc_ua::tcp::MessageStream::connect_hostname(const char* hostname, uint16_t port, const char* endpoint, sa_family_t family)
+void opc_ua::tcp::MessageStream::request_secure_channel()
 {
-	ts.connect_hostname(hostname, port, endpoint, family);
-}
-
-void opc_ua::tcp::MessageStream::start_secure_conversation(void* data)
-{
-	MessageStream* ms = static_cast<MessageStream*>(data);
 	TemporarySerializationContext sctx;
 	BinarySerializer srl;
-
-	ms->secure_channel_id = 0;
-	srl.serialize(sctx, ms->secure_channel_id);
 
 	AsymmetricAlgorithmSecurityHeader sech = {
 		.security_policy_uri = "http://opcfoundation.org/UA/SecurityPolicy#None",
@@ -518,27 +577,49 @@ void opc_ua::tcp::MessageStream::start_secure_conversation(void* data)
 	srl.serialize(sctx, sech);
 
 	SequenceHeader seqh = {
-		.sequence_number = ms->sequence_number++,
-		.request_id = ms->next_request_id++,
+		.sequence_number = sequence_number++,
+		.request_id = next_request_id++,
 	};
 	srl.serialize(sctx, seqh);
 
-	OpenSecureChannelRequest req(seqh.request_id, SecurityTokenRequestType::ISSUE,
+	request_handle = seqh.request_id;
+
+	OpenSecureChannelRequest req(request_handle, SecurityTokenRequestType::ISSUE,
 			MessageSecurityMode::NONE, "", 360000);
 	NodeId req_id(static_cast<UInt32>(NumericNodeId::OPEN_SECURE_CHANNEL_REQUEST));
 
 	srl.serialize(sctx, req_id);
 	srl.serialize(sctx, req);
 
-	ms->ts.write_message(MessageType::OPN, MessageIsFinal::FINAL, sctx);
+	ts.write_message(MessageType::OPN, MessageIsFinal::FINAL, sctx);
+}
+
+bool opc_ua::tcp::MessageStream::process_secure_channel_response(SerializationContext& sctx)
+{
+	BinarySerializer srl;
+	AsymmetricAlgorithmSecurityHeader sech;
+	srl.unserialize(sctx, sech);
+
+	SequenceHeader seqh;
+	srl.unserialize(sctx, seqh);
+
+	OpenSecureChannelResponse resp;
+	NodeId resp_id;
+
+	srl.unserialize(sctx, resp_id);
+	if (resp_id.type != NodeIdType::NUMERIC || resp_id.id.as_int != static_cast<UInt32>(NumericNodeId::OPEN_SECURE_CHANNEL_RESPONSE))
+		throw std::runtime_error("Unknown response for OPN");
+
+	srl.unserialize(sctx, resp);
+
+	// was this our request?
+	return (resp.response_header.request_handle == request_handle);
 }
 
 void opc_ua::tcp::MessageStream::handle_message(const MessageHeader& h, SerializationContext& sctx, void* data)
 {
 	MessageStream* ms = static_cast<MessageStream*>(data);
 	BinarySerializer srl;
-
-	srl.unserialize(sctx, ms->secure_channel_id);
 
 	switch (h.message_type)
 	{

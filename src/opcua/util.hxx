@@ -43,6 +43,8 @@ namespace opc_ua
 	public:
 		TemporarySerializationContext();
 		~TemporarySerializationContext();
+
+		void clear();
 	};
 };
 
