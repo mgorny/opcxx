@@ -237,10 +237,8 @@ namespace opc_ua
 			static UInt32 sequence_number;
 			static UInt32 next_request_id;
 
-			// secure channel request handle
-			UInt32 request_handle;
-
-			static void handle_message(const MessageHeader& h, SerializationContext& ctx, void* data);
+			// OPN request identifier
+			UInt32 channel_request_id;
 
 		public:
 			MessageStream(TransportStream& new_ts);

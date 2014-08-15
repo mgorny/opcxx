@@ -29,7 +29,7 @@ int main()
 
 	opc_ua::tcp::TransportStream f(ev);
 	opc_ua::tcp::MessageStream ms1(f);
-//	opc_ua::tcp::MessageStream ms2(f);
+	opc_ua::tcp::MessageStream ms2(f);
 
 	f.connect_hostname("127.0.0.1", 6001, endpoint.c_str());
 
