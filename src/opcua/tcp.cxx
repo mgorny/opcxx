@@ -187,6 +187,11 @@ void opc_ua::tcp::BinarySerializer::serialize(SerializationContext& ctx, const A
 	serialize(ctx, h.receiver_certificate_thumbprint);
 }
 
+void opc_ua::tcp::BinarySerializer::serialize(SerializationContext& ctx, const SymmetricAlgorithmSecurityHeader& h)
+{
+	serialize(ctx, h.token_id);
+}
+
 void opc_ua::tcp::BinarySerializer::serialize(SerializationContext& ctx, const SequenceHeader& h)
 {
 	serialize(ctx, h.sequence_number);
@@ -387,7 +392,7 @@ opc_ua::tcp::TransportStream::TransportStream(event_base* ev)
 {
 	assert(bev);
 
-	bufferevent_setcb(bev, read_handler, 0, 0, this);
+	bufferevent_setcb(bev, read_handler, 0, event_handler, this);
 	bufferevent_enable(bev, EV_READ);
 }
 
@@ -485,7 +490,7 @@ void opc_ua::tcp::TransportStream::read_handler(bufferevent* bev, void* ctx)
 				TemporarySerializationContext copy_buf;
 				copy_buf.write(data_copy.data(), data_copy.size());
 
-				if (ms->process_secure_channel_response(copy_buf))
+				if (ms->process_secure_channel_response(copy_buf, secure_channel_id))
 				{
 #if 0 // fails (because of extra padding size field?)
 					if (copy_buf.size() != 0)
@@ -518,7 +523,15 @@ void opc_ua::tcp::TransportStream::read_handler(bufferevent* bev, void* ctx)
 	s->got_header = false;
 }
 
-void opc_ua::tcp::TransportStream::write_message(MessageType msg_type, MessageIsFinal is_final, SerializationContext& msg)
+void opc_ua::tcp::TransportStream::event_handler(bufferevent* bev, short what, void* ctx)
+{
+	if (what & BEV_EVENT_EOF)
+		throw std::runtime_error("Transport stream disconnected");
+	if (what & BEV_EVENT_ERROR)
+		throw std::runtime_error("Transport stream error");
+}
+
+void opc_ua::tcp::TransportStream::write_message(MessageType msg_type, MessageIsFinal is_final, SerializationContext& msg, UInt32 channel_id)
 {
 	BinarySerializer srl;
 
@@ -543,8 +556,7 @@ void opc_ua::tcp::TransportStream::write_message(MessageType msg_type, MessageIs
 			h.message_type = msg_type;
 			h.is_final = is_final;
 			h.message_size = h.serialized_length + msg.size();
-			// TODO: real id for CLO & MSG
-			h.secure_channel_id = 0;
+			h.secure_channel_id = channel_id;
 			srl.serialize(out_ctx, h);
 			break;
 		}
@@ -602,7 +614,7 @@ void opc_ua::tcp::MessageStream::request_secure_channel()
 	ts.write_message(MessageType::OPN, MessageIsFinal::FINAL, sctx);
 }
 
-bool opc_ua::tcp::MessageStream::process_secure_channel_response(SerializationContext& sctx)
+bool opc_ua::tcp::MessageStream::process_secure_channel_response(SerializationContext& sctx, UInt32 channel_id)
 {
 	BinarySerializer srl;
 	AsymmetricAlgorithmSecurityHeader sech;
@@ -621,5 +633,40 @@ bool opc_ua::tcp::MessageStream::process_secure_channel_response(SerializationCo
 	srl.unserialize(sctx, resp);
 
 	// was this our request?
-	return (seqh.request_id == channel_request_id);
+	if (seqh.request_id == channel_request_id)
+	{
+		secure_channel_id = channel_id;
+		token_id = resp.security_token.token_id;
+		on_connected();
+		return true;
+	}
+	else
+		return false;
+}
+
+void opc_ua::tcp::MessageStream::close()
+{
+	TemporarySerializationContext sctx;
+	BinarySerializer srl;
+
+	SymmetricAlgorithmSecurityHeader sech = {
+		.token_id = token_id,
+	};
+	srl.serialize(sctx, sech);
+
+	SequenceHeader seqh = {
+		.sequence_number = sequence_number++,
+		.request_id = next_request_id++,
+	};
+	srl.serialize(sctx, seqh);
+
+	CloseSecureChannelRequest req(seqh.request_id);
+	NodeId req_id(static_cast<UInt32>(NumericNodeId::CLOSE_SECURE_CHANNEL_REQUEST));
+
+	srl.serialize(sctx, req_id);
+	srl.serialize(sctx, req);
+
+	srl.serialize(sctx, Byte(0));
+
+	ts.write_message(MessageType::CLO, MessageIsFinal::FINAL, sctx, secure_channel_id);
 }

@@ -21,6 +21,35 @@
 std::string endpoint("opc.tcp://127.0.0.1:6001/sampleuaserver");
 opc_ua::tcp::BinarySerializer srl;
 
+class MyStream : public opc_ua::tcp::MessageStream
+{
+protected:
+	void on_connected()
+	{
+//		close();
+	}
+
+public:
+	MyStream(opc_ua::tcp::TransportStream& ts)
+		: MessageStream(ts)
+	{
+	}
+};
+
+class MyStream2 : public opc_ua::tcp::MessageStream
+{
+protected:
+	void on_connected()
+	{
+	}
+
+public:
+	MyStream2(opc_ua::tcp::TransportStream& ts)
+		: MessageStream(ts)
+	{
+	}
+};
+
 int main()
 {
 	// set libevent up
@@ -28,8 +57,8 @@ int main()
 	assert(ev);
 
 	opc_ua::tcp::TransportStream f(ev);
-	opc_ua::tcp::MessageStream ms1(f);
-	opc_ua::tcp::MessageStream ms2(f);
+	MyStream ms1(f);
+	MyStream2 ms2(f);
 
 	f.connect_hostname("127.0.0.1", 6001, endpoint.c_str());
 

@@ -128,6 +128,9 @@ namespace opc_ua
 		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
 		virtual void unserialize(SerializationContext& ctx, Serializer& s);
 	};
+
+	typedef RequestHeader CloseSecureChannelRequest;
+	typedef ResponseHeader CloseSecureChannelResponse;
 };
 
 #endif /*STRUCT_HXX*/

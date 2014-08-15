@@ -181,6 +181,7 @@ namespace opc_ua
 			void serialize(SerializationContext& ctx, const AcknowledgeMessage& msg);
 			void serialize(SerializationContext& ctx, const ErrorMessage& msg);
 			void serialize(SerializationContext& ctx, const AsymmetricAlgorithmSecurityHeader& h);
+			void serialize(SerializationContext& ctx, const SymmetricAlgorithmSecurityHeader& h);
 			void serialize(SerializationContext& ctx, const SequenceHeader& h);
 
 			void unserialize(SerializationContext& ctx, MessageIsFinal& b);
@@ -216,13 +217,14 @@ namespace opc_ua
 			std::vector<MessageStream*> secure_channel_queue;
 
 			static void read_handler(bufferevent* bev, void* ctx);
+			static void event_handler(bufferevent* bev, short what, void* ctx);
 
 		public:
 			TransportStream(event_base* ev);
 			~TransportStream();
 
 			void connect_hostname(const char* hostname, uint16_t port, const char* endpoint, sa_family_t family = AF_UNSPEC);
-			void write_message(MessageType msg_type, MessageIsFinal is_final, SerializationContext& msg);
+			void write_message(MessageType msg_type, MessageIsFinal is_final, SerializationContext& msg, UInt32 secure_channel_id = 0);
 
 			// Queue a request for secure channel.
 			void add_secure_channel(MessageStream& ms);
@@ -239,6 +241,15 @@ namespace opc_ua
 
 			// OPN request identifier
 			UInt32 channel_request_id;
+			// secure channel id for write_message()
+			UInt32 secure_channel_id;
+			// security token id for further messages
+			UInt32 token_id;
+
+		protected:
+			// Method called once MessageStream successfully establishes
+			// secure channel. Needs to be overriden by subclass.
+			virtual void on_connected() = 0;
 
 		public:
 			MessageStream(TransportStream& new_ts);
@@ -248,7 +259,9 @@ namespace opc_ua
 			void request_secure_channel();
 			// process secure channel response
 			// return true if it matches our request
-			bool process_secure_channel_response(SerializationContext& buf);
+			bool process_secure_channel_response(SerializationContext& buf, UInt32 channel_id);
+			// request closing secure channel
+			void close();
 		};
 	};
 };
