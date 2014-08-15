@@ -43,7 +43,7 @@ void opc_ua::tcp::BinarySerializer::serialize(SerializationContext& ctx, Int64 i
 	ctx.write(&i, sizeof(i));
 }
 
-void opc_ua::tcp::BinarySerializer::serialize(SerializationContext& ctx, String s)
+void opc_ua::tcp::BinarySerializer::serialize(SerializationContext& ctx, const String& s)
 {
 	Int32 s_len = s.size();
 	// TODO: allow proper distinction between null & empty string
@@ -54,7 +54,7 @@ void opc_ua::tcp::BinarySerializer::serialize(SerializationContext& ctx, String 
 		ctx.write(s.c_str(), s_len);
 }
 
-void opc_ua::tcp::BinarySerializer::serialize(SerializationContext& ctx, Array<String>& a)
+void opc_ua::tcp::BinarySerializer::serialize(SerializationContext& ctx, const Array<String>& a)
 {
 	Int32 a_len = a.size();
 	// TODO: allow proper distinction between null & empty array
@@ -80,7 +80,7 @@ void opc_ua::tcp::BinarySerializer::serialize(SerializationContext& ctx, DateTim
 	serialize(ctx, ts);
 }
 
-void opc_ua::tcp::BinarySerializer::serialize(SerializationContext& ctx, NodeId n)
+void opc_ua::tcp::BinarySerializer::serialize(SerializationContext& ctx, const NodeId& n)
 {
 	switch (n.type)
 	{
@@ -112,12 +112,12 @@ void opc_ua::tcp::BinarySerializer::serialize(SerializationContext& ctx, NodeId 
 	}
 }
 
-void opc_ua::tcp::BinarySerializer::serialize(SerializationContext& ctx, Struct& s)
+void opc_ua::tcp::BinarySerializer::serialize(SerializationContext& ctx, const Struct& s)
 {
 	s.serialize(ctx, *this);
 }
 
-void opc_ua::tcp::BinarySerializer::serialize(SerializationContext& ctx, ExtensionObject& s)
+void opc_ua::tcp::BinarySerializer::serialize(SerializationContext& ctx, const ExtensionObject& s)
 {
 	// Note: extension objects are not supported now.
 	serialize(ctx, NodeId(0));

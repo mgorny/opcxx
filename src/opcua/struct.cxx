@@ -24,7 +24,7 @@ opc_ua::RequestHeader::RequestHeader(UInt32 req_handle)
 {
 }
 
-void opc_ua::RequestHeader::serialize(SerializationContext& ctx, Serializer& s)
+void opc_ua::RequestHeader::serialize(SerializationContext& ctx, Serializer& s) const
 {
 	s.serialize(ctx, authentication_token);
 	s.serialize(ctx, timestamp);
@@ -50,7 +50,7 @@ opc_ua::DiagnosticInfo::DiagnosticInfo()
 {
 }
 
-void opc_ua::DiagnosticInfo::serialize(SerializationContext& ctx, Serializer& s)
+void opc_ua::DiagnosticInfo::serialize(SerializationContext& ctx, Serializer& s) const
 {
 	s.serialize(ctx, flags);
 }
@@ -64,7 +64,7 @@ opc_ua::ResponseHeader::ResponseHeader()
 {
 }
 
-void opc_ua::ResponseHeader::serialize(SerializationContext& ctx, Serializer& s)
+void opc_ua::ResponseHeader::serialize(SerializationContext& ctx, Serializer& s) const
 {
 	s.serialize(ctx, timestamp);
 	s.serialize(ctx, request_handle);
@@ -97,7 +97,7 @@ opc_ua::OpenSecureChannelRequest::OpenSecureChannelRequest(UInt32 req_handle, Se
 {
 }
 
-void opc_ua::OpenSecureChannelRequest::serialize(SerializationContext& ctx, Serializer& s)
+void opc_ua::OpenSecureChannelRequest::serialize(SerializationContext& ctx, Serializer& s) const
 {
 	s.serialize(ctx, request_header);
 	s.serialize(ctx, client_protocol_version);
@@ -126,7 +126,7 @@ opc_ua::ChannelSecurityToken::ChannelSecurityToken()
 {
 }
 
-void opc_ua::ChannelSecurityToken::serialize(SerializationContext& ctx, Serializer& s)
+void opc_ua::ChannelSecurityToken::serialize(SerializationContext& ctx, Serializer& s) const
 {
 	s.serialize(ctx, channel_id);
 	s.serialize(ctx, token_id);
@@ -146,7 +146,7 @@ opc_ua::OpenSecureChannelResponse::OpenSecureChannelResponse()
 {
 }
 
-void opc_ua::OpenSecureChannelResponse::serialize(SerializationContext& ctx, Serializer& s)
+void opc_ua::OpenSecureChannelResponse::serialize(SerializationContext& ctx, Serializer& s) const
 {
 	s.serialize(ctx, response_header);
 	s.serialize(ctx, server_protocol_version);

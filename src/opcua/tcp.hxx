@@ -153,12 +153,12 @@ namespace opc_ua
 			virtual void serialize(SerializationContext& ctx, UInt32 i);
 			virtual void serialize(SerializationContext& ctx, Int32 i);
 			virtual void serialize(SerializationContext& ctx, Int64 i);
-			virtual void serialize(SerializationContext& ctx, String s);
+			virtual void serialize(SerializationContext& ctx, const String& s);
 			virtual void serialize(SerializationContext& ctx, DateTime t);
-			virtual void serialize(SerializationContext& ctx, NodeId n);
-			virtual void serialize(SerializationContext& ctx, Struct& s);
-			virtual void serialize(SerializationContext& ctx, Array<String>& a);
-			virtual void serialize(SerializationContext& ctx, ExtensionObject& s);
+			virtual void serialize(SerializationContext& ctx, const NodeId& n);
+			virtual void serialize(SerializationContext& ctx, const Struct& s);
+			virtual void serialize(SerializationContext& ctx, const Array<String>& a);
+			virtual void serialize(SerializationContext& ctx, const ExtensionObject& s);
 
 			virtual void unserialize(SerializationContext& ctx, Byte& i);
 			virtual void unserialize(SerializationContext& ctx, UInt16& i);

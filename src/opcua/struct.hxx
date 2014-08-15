@@ -30,7 +30,7 @@ namespace opc_ua
 		RequestHeader(UInt32 req_handle);
 
 		// metadata
-		virtual void serialize(SerializationContext& ctx, Serializer& s);
+		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
 		virtual void unserialize(SerializationContext& ctx, Serializer& s);
 	};
 
@@ -47,7 +47,7 @@ namespace opc_ua
 		DiagnosticInfo();
 
 		// metadata
-		virtual void serialize(SerializationContext& ctx, Serializer& s);
+		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
 		virtual void unserialize(SerializationContext& ctx, Serializer& s);
 	};
 
@@ -64,7 +64,7 @@ namespace opc_ua
 		ResponseHeader();
 
 		// metadata
-		virtual void serialize(SerializationContext& ctx, Serializer& s);
+		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
 		virtual void unserialize(SerializationContext& ctx, Serializer& s);
 	};
 
@@ -97,7 +97,7 @@ namespace opc_ua
 		OpenSecureChannelRequest(UInt32 req_handle, SecurityTokenRequestType req_type, MessageSecurityMode req_mode, ByteString req_nonce, UInt32 req_lifetime);
 
 		// metadata
-		virtual void serialize(SerializationContext& ctx, Serializer& s);
+		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
 		virtual void unserialize(SerializationContext& ctx, Serializer& s);
 	};
 
@@ -111,7 +111,7 @@ namespace opc_ua
 		// non-initializing constructor
 		ChannelSecurityToken();
 		// metadata
-		virtual void serialize(SerializationContext& ctx, Serializer& s);
+		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
 		virtual void unserialize(SerializationContext& ctx, Serializer& s);
 	};
 
@@ -125,7 +125,7 @@ namespace opc_ua
 		// non-initializing constructor
 		OpenSecureChannelResponse();
 		// metadata
-		virtual void serialize(SerializationContext& ctx, Serializer& s);
+		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
 		virtual void unserialize(SerializationContext& ctx, Serializer& s);
 	};
 };

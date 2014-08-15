@@ -63,7 +63,7 @@ namespace opc_ua
 	// An abstract structure needing serialization function.
 	struct Struct
 	{
-		virtual void serialize(SerializationContext& ctx, Serializer& s) = 0;
+		virtual void serialize(SerializationContext& ctx, Serializer& s) const = 0;
 		virtual void unserialize(SerializationContext& ctx, Serializer& s) = 0;
 	};
 
@@ -84,12 +84,12 @@ namespace opc_ua
 		virtual void serialize(SerializationContext& ctx, UInt32 i) = 0;
 		virtual void serialize(SerializationContext& ctx, Int32 i) = 0;
 		virtual void serialize(SerializationContext& ctx, Int64 i) = 0;
-		virtual void serialize(SerializationContext& ctx, String s) = 0;
+		virtual void serialize(SerializationContext& ctx, const String& s) = 0;
 		virtual void serialize(SerializationContext& ctx, DateTime t) = 0;
-		virtual void serialize(SerializationContext& ctx, NodeId n) = 0;
-		virtual void serialize(SerializationContext& ctx, Struct& s) = 0;
-		virtual void serialize(SerializationContext& ctx, Array<String>& a) = 0;
-		virtual void serialize(SerializationContext& ctx, ExtensionObject& s) = 0;
+		virtual void serialize(SerializationContext& ctx, const NodeId& n) = 0;
+		virtual void serialize(SerializationContext& ctx, const Struct& s) = 0;
+		virtual void serialize(SerializationContext& ctx, const Array<String>& a) = 0;
+		virtual void serialize(SerializationContext& ctx, const ExtensionObject& s) = 0;
 
 		virtual void unserialize(SerializationContext& ctx, Byte& i) = 0;
 		virtual void unserialize(SerializationContext& ctx, UInt16& i) = 0;
