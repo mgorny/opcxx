@@ -442,14 +442,15 @@ void opc_ua::tcp::TransportStream::read_handler(bufferevent* bev, void* ctx)
 	if (s->in_ctx.size() < s->h.message_size - s->h.serialized_length)
 		return;
 
-	// TODO: do not allow reading past message_size
+	TemporarySerializationContext buf;
+	buf.move(s->in_ctx, s->h.message_size - s->h.serialized_length);
 
 	// process the message
 	switch (s->h.message_type)
 	{
 		case MessageType::ACK:
 		{
-			srl.unserialize(s->in_ctx, s->remote_limits);
+			srl.unserialize(buf, s->remote_limits);
 
 			s->connected = true;
 			// push queued requests
@@ -462,7 +463,7 @@ void opc_ua::tcp::TransportStream::read_handler(bufferevent* bev, void* ctx)
 		case MessageType::ERR:
 		{
 			ErrorMessage err;
-			srl.unserialize(s->in_ctx, err);
+			srl.unserialize(buf, err);
 
 			throw std::runtime_error("ERR message received");
 			break;
@@ -472,7 +473,7 @@ void opc_ua::tcp::TransportStream::read_handler(bufferevent* bev, void* ctx)
 		{
 			TemporarySerializationContext buffer;
 			UInt32 secure_channel_id;
-			srl.unserialize(s->in_ctx, secure_channel_id);
+			srl.unserialize(buf, secure_channel_id);
 
 			for (auto i = s->secure_channel_queue.begin();; ++i)
 			{
@@ -485,7 +486,7 @@ void opc_ua::tcp::TransportStream::read_handler(bufferevent* bev, void* ctx)
 				//buffer.clear();
 				//buffer.write(s->in_ctx);
 
-				if (ms->process_secure_channel_response(s->in_ctx))
+				if (ms->process_secure_channel_response(buf))
 				{
 					// request matched, let's activate the channel
 					s->secure_channel_queue.erase(i);

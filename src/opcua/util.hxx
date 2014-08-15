@@ -34,6 +34,10 @@ namespace opc_ua
 		// copy contents of a buffer associated with another
 		// SerializationContext to the buffer
 		void write(const SerializationContext& ctx);
+
+		// move contents of a buffer associated with another
+		// SerializationContext
+		void move(SerializationContext& orig, size_t length);
 	};
 
 	// Context used to store part of serialized data. Allocates

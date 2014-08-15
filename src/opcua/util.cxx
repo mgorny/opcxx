@@ -37,7 +37,14 @@ void opc_ua::SerializationContext::write(const void* data, size_t size)
 
 void opc_ua::SerializationContext::write(const SerializationContext& ctx)
 {
-	evbuffer_add_buffer(_buf, ctx._buf);
+	if (evbuffer_add_buffer(_buf, ctx._buf) == -1)
+		throw std::runtime_error("Failure appending to buffer");
+}
+
+void opc_ua::SerializationContext::move(SerializationContext& orig, size_t length)
+{
+	if (evbuffer_remove_buffer(orig._buf, _buf, length) < length)
+		throw std::runtime_error("Buffer move failed");
 }
 
 opc_ua::TemporarySerializationContext::TemporarySerializationContext()
