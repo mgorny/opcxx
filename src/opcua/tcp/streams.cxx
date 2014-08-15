@@ -9,7 +9,7 @@
 
 #include "streams.hxx"
 
-#include <opcua/tcp/ids.hxx>
+#include <opcua/tcp/idmapping.hxx>
 
 #include <cassert>
 #include <stdexcept>
@@ -239,7 +239,7 @@ void opc_ua::tcp::MessageStream::request_secure_channel()
 
 	OpenSecureChannelRequest req(channel_request_id, SecurityTokenRequestType::ISSUE,
 			MessageSecurityMode::NONE, "", 360000);
-	NodeId req_id(NumericNodeIdBinary(req));
+	NodeId req_id(id_mapping.at(req.node_id()));
 
 	srl.serialize(sctx, req_id);
 	srl.serialize(sctx, req);
@@ -260,7 +260,7 @@ bool opc_ua::tcp::MessageStream::process_secure_channel_response(SerializationCo
 	NodeId resp_id;
 
 	srl.unserialize(sctx, resp_id);
-	if (resp_id.type != NodeIdType::NUMERIC || resp_id.id.as_int != NumericNodeIdBinary(resp))
+	if (resp_id.type != NodeIdType::NUMERIC || resp_id.id.as_int != id_mapping.at(resp.node_id()))
 		throw std::runtime_error("Unknown response for OPN");
 
 	srl.unserialize(sctx, resp);
@@ -294,7 +294,7 @@ void opc_ua::tcp::MessageStream::close()
 	srl.serialize(sctx, seqh);
 
 	CloseSecureChannelRequest req(seqh.request_id);
-	NodeId req_id(NumericNodeIdBinary(req));
+	NodeId req_id(id_mapping.at(req.node_id()));
 
 	srl.serialize(sctx, req_id);
 	srl.serialize(sctx, req);

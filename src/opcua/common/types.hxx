@@ -67,6 +67,12 @@ namespace opc_ua
 		virtual void unserialize(SerializationContext& ctx, Serializer& s) = 0;
 	};
 
+	// An abstract message.
+	struct Message : Struct
+	{
+		virtual UInt32 node_id() const = 0;
+	};
+
 	// Extension object.
 	// TODO: currently supports only null contents
 	struct ExtensionObject

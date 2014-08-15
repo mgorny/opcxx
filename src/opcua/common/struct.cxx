@@ -161,3 +161,36 @@ void opc_ua::OpenSecureChannelResponse::unserialize(SerializationContext& ctx, S
 	s.unserialize(ctx, security_token);
 	s.unserialize(ctx, server_nonce);
 }
+
+opc_ua::CloseSecureChannelRequest::CloseSecureChannelRequest()
+{
+}
+
+opc_ua::CloseSecureChannelRequest::CloseSecureChannelRequest(UInt32 req_handle)
+	: request_header(req_handle)
+{
+}
+
+void opc_ua::CloseSecureChannelRequest::serialize(SerializationContext& ctx, Serializer& s) const
+{
+	s.serialize(ctx, request_header);
+}
+
+void opc_ua::CloseSecureChannelRequest::unserialize(SerializationContext& ctx, Serializer& s)
+{
+	s.unserialize(ctx, request_header);
+}
+
+opc_ua::CloseSecureChannelResponse::CloseSecureChannelResponse()
+{
+}
+
+void opc_ua::CloseSecureChannelResponse::serialize(SerializationContext& ctx, Serializer& s) const
+{
+	s.serialize(ctx, response_header);
+}
+
+void opc_ua::CloseSecureChannelResponse::unserialize(SerializationContext& ctx, Serializer& s)
+{
+	s.unserialize(ctx, response_header);
+}

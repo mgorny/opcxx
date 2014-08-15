@@ -9,8 +9,6 @@
 
 #include "types.hxx"
 
-#include <opcua/common/ids.hxx>
-
 #include <cassert>
 #include <cstdlib>
 #include <stdexcept>

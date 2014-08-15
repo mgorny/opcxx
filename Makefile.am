@@ -5,11 +5,10 @@ AM_CPPFLAGS = \
 	-I$(srcdir)/src
 
 noinst_HEADERS = \
-	src/opcua/common/ids.hxx \
 	src/opcua/common/struct.hxx \
 	src/opcua/common/types.hxx \
 	src/opcua/common/util.hxx \
-	src/opcua/tcp/ids.hxx \
+	src/opcua/tcp/idmapping.hxx \
 	src/opcua/tcp/streams.hxx \
 	src/opcua/tcp/types.hxx
 
@@ -20,6 +19,7 @@ libopcua_la_SOURCES = \
 	src/opcua/common/struct.cxx \
 	src/opcua/common/types.cxx \
 	src/opcua/common/util.cxx \
+	src/opcua/tcp/idmapping.cxx \
 	src/opcua/tcp/streams.cxx \
 	src/opcua/tcp/types.cxx \
 	$(noinst_HEADERS)

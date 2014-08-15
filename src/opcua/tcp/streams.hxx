@@ -16,7 +16,7 @@
 #include <opcua/common/util.hxx>
 #include <opcua/tcp/types.hxx>
 
-#include <map>
+#include <unordered_map>
 #include <vector>
 
 #include <sys/socket.h>
@@ -44,7 +44,7 @@ namespace opc_ua
 			AcknowledgeMessage remote_limits;
 
 			// secure channels
-			std::map<UInt32, MessageStream*> secure_channels;
+			std::unordered_map<UInt32, MessageStream*> secure_channels;
 			std::vector<MessageStream*> secure_channel_queue;
 
 			static void read_handler(bufferevent* bev, void* ctx);

@@ -82,8 +82,10 @@ namespace opc_ua
 		SIGN_AND_ENCRYPT = 3,
 	};
 
-	struct OpenSecureChannelRequest : Struct
+	struct OpenSecureChannelRequest : Message
 	{
+		static constexpr UInt32 NODE_ID = 444;
+
 		RequestHeader request_header;
 		UInt32 client_protocol_version;
 		SecurityTokenRequestType request_type;
@@ -99,6 +101,7 @@ namespace opc_ua
 		// metadata
 		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
 		virtual void unserialize(SerializationContext& ctx, Serializer& s);
+		virtual UInt32 node_id() const { return NODE_ID; }
 	};
 
 	struct ChannelSecurityToken : Struct
@@ -115,8 +118,10 @@ namespace opc_ua
 		virtual void unserialize(SerializationContext& ctx, Serializer& s);
 	};
 
-	struct OpenSecureChannelResponse : Struct
+	struct OpenSecureChannelResponse : Message
 	{
+		static constexpr UInt32 NODE_ID = 447;
+
 		ResponseHeader response_header;
 		UInt32 server_protocol_version;
 		ChannelSecurityToken security_token;
@@ -127,10 +132,41 @@ namespace opc_ua
 		// metadata
 		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
 		virtual void unserialize(SerializationContext& ctx, Serializer& s);
+		virtual UInt32 node_id() const { return NODE_ID; }
 	};
 
-	typedef RequestHeader CloseSecureChannelRequest;
-	typedef ResponseHeader CloseSecureChannelResponse;
+	struct CloseSecureChannelRequest : Message
+	{
+		static constexpr UInt32 NODE_ID = 450;
+
+		RequestHeader request_header;
+
+		// non-initializing constructor
+		CloseSecureChannelRequest();
+		// initializing constructor
+		CloseSecureChannelRequest(UInt32 req_handle);
+
+		// metadata
+		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
+		virtual void unserialize(SerializationContext& ctx, Serializer& s);
+		virtual UInt32 node_id() const { return NODE_ID; }
+	};
+
+	struct CloseSecureChannelResponse : Message
+	{
+		static constexpr UInt32 NODE_ID = 453;
+
+		ResponseHeader response_header;
+
+		// non-initializing constructor
+		CloseSecureChannelResponse();
+
+		// metadata
+		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
+		virtual void unserialize(SerializationContext& ctx, Serializer& s);
+		virtual UInt32 node_id() const { return NODE_ID; }
+	};
+
 };
 
 #endif /*OPCUA_COMMON_STRUCT_HXX*/
