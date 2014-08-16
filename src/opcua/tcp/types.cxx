@@ -373,6 +373,11 @@ void opc_ua::tcp::BinarySerializer::unserialize(SerializationContext& ctx, Asymm
 	unserialize(ctx, h.receiver_certificate_thumbprint);
 }
 
+void opc_ua::tcp::BinarySerializer::unserialize(SerializationContext& ctx, SymmetricAlgorithmSecurityHeader& h)
+{
+	unserialize(ctx, h.token_id);
+}
+
 void opc_ua::tcp::BinarySerializer::unserialize(SerializationContext& ctx, SequenceHeader& h)
 {
 	unserialize(ctx, h.sequence_number);

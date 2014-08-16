@@ -9,6 +9,25 @@
 
 #include "struct.hxx"
 
+template <class T>
+constexpr opc_ua::Message* message_constructor()
+{
+	return new T;
+}
+
+template <class T>
+constexpr opc_ua::MessageConstructorMap::value_type M()
+{
+	return {T::NODE_ID, message_constructor<T>};
+}
+
+const opc_ua::MessageConstructorMap opc_ua::message_constructors{
+	M<OpenSecureChannelRequest>(),
+	M<OpenSecureChannelResponse>(),
+	M<CloseSecureChannelRequest>(),
+	M<CloseSecureChannelResponse>(),
+};
+
 opc_ua::RequestHeader::RequestHeader()
 {
 }

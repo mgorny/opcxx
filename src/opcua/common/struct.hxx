@@ -11,8 +11,15 @@
 #include <opcua/common/types.hxx>
 #include <opcua/common/util.hxx>
 
+#include <unordered_map>
+
 namespace opc_ua
 {
+	// std::function<> triggers undefined symbols for NODE_ID
+	typedef Message* (*MessageConstructorType)();
+	typedef std::unordered_map<UInt32, MessageConstructorType> MessageConstructorMap;
+	extern const MessageConstructorMap message_constructors;
+
 	struct RequestHeader : Struct
 	{
 		NodeId authentication_token;
@@ -166,7 +173,6 @@ namespace opc_ua
 		virtual void unserialize(SerializationContext& ctx, Serializer& s);
 		virtual UInt32 node_id() const { return NODE_ID; }
 	};
-
 };
 
 #endif /*OPCUA_COMMON_STRUCT_HXX*/

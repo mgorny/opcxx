@@ -16,6 +16,7 @@
 #include <opcua/common/util.hxx>
 #include <opcua/tcp/types.hxx>
 
+#include <memory>
 #include <unordered_map>
 #include <vector>
 
@@ -82,6 +83,9 @@ namespace opc_ua
 			// secure channel. Needs to be overriden by subclass.
 			virtual void on_connected() = 0;
 
+			// Method called when complete message is received.
+			virtual void on_message(std::unique_ptr<Message> msg, UInt32 request_id) = 0;
+
 		public:
 			MessageStream(TransportStream& new_ts);
 			~MessageStream();
@@ -95,6 +99,8 @@ namespace opc_ua
 			bool process_secure_channel_response(SerializationContext& buf, UInt32 channel_id);
 			// request closing secure channel
 			void close();
+			// handle incoming message.
+			void handle_message(MessageHeader& h, SerializationContext& body);
 		};
 	};
 };

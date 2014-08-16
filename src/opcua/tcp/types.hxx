@@ -183,6 +183,7 @@ namespace opc_ua
 			void unserialize(SerializationContext& ctx, AcknowledgeMessage& msg);
 			void unserialize(SerializationContext& ctx, ErrorMessage& msg);
 			void unserialize(SerializationContext& ctx, AsymmetricAlgorithmSecurityHeader& h);
+			void unserialize(SerializationContext& ctx, SymmetricAlgorithmSecurityHeader& h);
 			void unserialize(SerializationContext& ctx, SequenceHeader& h);
 		};
 	};

@@ -142,8 +142,13 @@ void opc_ua::tcp::TransportStream::read_handler(bufferevent* bev, void* ctx)
 
 		case MessageType::CLO:
 		case MessageType::MSG:
-//			s->msg_callback(s->h, s->in_ctx, s->callback_data);
+		{
+			UInt32 secure_channel_id;
+			srl.unserialize(buf, secure_channel_id);
+
+			s->secure_channels[secure_channel_id]->handle_message(s->h, buf);
 			break;
+		}
 
 		default:
 			assert(not_reached);
@@ -299,4 +304,42 @@ void opc_ua::tcp::MessageStream::close()
 	CloseSecureChannelRequest req(next_request_id);
 
 	write_message(req, MessageType::CLO);
+}
+
+void opc_ua::tcp::MessageStream::handle_message(MessageHeader& h, SerializationContext& body)
+{
+	BinarySerializer srl;
+	SymmetricAlgorithmSecurityHeader sech;
+	srl.unserialize(body, sech);
+
+	if (sech.token_id == token_id)
+		throw std::runtime_error("Incorrect token ID received");
+
+	SequenceHeader seqh;
+	srl.unserialize(body, seqh);
+
+	if (h.is_final != MessageIsFinal::FINAL)
+		throw std::runtime_error("Non-final message received");
+	// TODO: chunks and stuff
+
+	NodeId msg_id;
+	srl.unserialize(body, msg_id);
+
+	if (msg_id.type != NodeIdType::NUMERIC)
+		throw std::runtime_error("Non-numeric node id received");
+	if (msg_id.ns != 0)
+		throw std::runtime_error("Non-standard namespace received");
+
+	UInt32 base_id = reverse_id_mapping.at(msg_id.id.as_int);
+	std::unique_ptr<Message> msg(message_constructors.at(base_id)());
+	msg->unserialize(body, srl);
+
+	switch (h.message_type)
+	{
+		case MessageType::MSG:
+			on_message(std::move(msg), seqh.request_id);
+			break;
+		default:
+			assert(not_reached);
+	}
 }

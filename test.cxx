@@ -29,6 +29,10 @@ protected:
 //		close();
 	}
 
+	void on_message(std::unique_ptr<opc_ua::Message>, opc_ua::UInt32 req_id)
+	{
+	}
+
 public:
 	MyStream(opc_ua::tcp::TransportStream& ts)
 		: MessageStream(ts)
@@ -42,6 +46,11 @@ protected:
 	void on_connected()
 	{
 	}
+
+	void on_message(std::unique_ptr<opc_ua::Message> body, opc_ua::UInt32 req_id)
+	{
+	}
+
 
 public:
 	MyStream2(opc_ua::tcp::TransportStream& ts)

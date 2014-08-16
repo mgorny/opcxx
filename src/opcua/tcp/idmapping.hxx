@@ -16,7 +16,9 @@ namespace opc_ua
 {
 	namespace tcp
 	{
-		extern std::unordered_map<UInt32, UInt32> id_mapping;
+		typedef std::unordered_map<UInt32, UInt32> NodeIdMappingType;
+		extern const NodeIdMappingType id_mapping;
+		extern const NodeIdMappingType reverse_id_mapping;
 	};
 };
 
