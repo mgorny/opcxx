@@ -34,7 +34,7 @@ opc_ua::tcp::TransportStream::~TransportStream()
 	bufferevent_free(bev);
 }
 
-void opc_ua::tcp::TransportStream::connect_hostname(const char* hostname, uint16_t port, const char* endpoint, sa_family_t family)
+void opc_ua::tcp::TransportStream::connect_hostname(const char* hostname, uint16_t port, const std::string& endpoint, sa_family_t family)
 {
 	if (bufferevent_socket_connect_hostname(bev, 0, family, hostname, port))
 		throw std::runtime_error("Connect failed prematurely (hostname resolution?)");
@@ -213,7 +213,7 @@ void opc_ua::tcp::TransportStream::add_secure_channel(MessageStream& ms)
 }
 
 opc_ua::tcp::MessageStream::MessageStream(TransportStream& new_ts)
-	: ts(new_ts)
+	: ts(new_ts), attached_session(nullptr), established(false)
 {
 	ts.add_secure_channel(*this);
 }
@@ -222,7 +222,7 @@ opc_ua::tcp::MessageStream::~MessageStream()
 {
 }
 
-void opc_ua::tcp::MessageStream::write_message(Message& msg, MessageType msg_type)
+void opc_ua::tcp::MessageStream::write_message(Request& msg, MessageType msg_type)
 {
 	TemporarySerializationContext sctx;
 	BinarySerializer srl;
@@ -254,6 +254,14 @@ void opc_ua::tcp::MessageStream::write_message(Message& msg, MessageType msg_typ
 
 	NodeId msg_id(id_mapping.at(msg.node_id()));
 	srl.serialize(sctx, msg_id);
+
+	// fill request header in
+	msg.request_header.authentication_token = NodeId(0);
+	msg.request_header.timestamp = DateTime::now();
+	msg.request_header.request_handle = seqh.request_id;
+	msg.request_header.return_diagnostics = 0;
+	msg.request_header.audit_entry_id = "";
+	msg.request_header.timeout_hint = 0;
 	srl.serialize(sctx, msg);
 
 	ts.write_message(msg_type, MessageIsFinal::FINAL, sctx, secure_channel_id);
@@ -263,7 +271,7 @@ void opc_ua::tcp::MessageStream::request_secure_channel()
 {
 	channel_request_id = sequence_number;
 
-	OpenSecureChannelRequest req(channel_request_id, SecurityTokenRequestType::ISSUE,
+	OpenSecureChannelRequest req(SecurityTokenRequestType::ISSUE,
 			MessageSecurityMode::NONE, "", 360000);
 
 	write_message(req, MessageType::OPN);
@@ -293,7 +301,9 @@ bool opc_ua::tcp::MessageStream::process_secure_channel_response(SerializationCo
 		secure_channel_id = channel_id;
 		assert(secure_channel_id == resp.security_token.channel_id);
 		token_id = resp.security_token.token_id;
-		on_connected();
+		established = true;
+		if (attached_session)
+			attached_session->open_session();
 		return true;
 	}
 	else
@@ -302,7 +312,7 @@ bool opc_ua::tcp::MessageStream::process_secure_channel_response(SerializationCo
 
 void opc_ua::tcp::MessageStream::close()
 {
-	CloseSecureChannelRequest req(next_request_id);
+	CloseSecureChannelRequest req;
 
 	write_message(req, MessageType::CLO);
 }
@@ -332,15 +342,64 @@ void opc_ua::tcp::MessageStream::handle_message(MessageHeader& h, SerializationC
 		throw std::runtime_error("Non-standard namespace received");
 
 	UInt32 base_id = reverse_id_mapping.at(msg_id.as_int);
-	std::unique_ptr<Message> msg(message_constructors.at(base_id)());
+	Message* msg = message_constructors.at(base_id)();
 	msg->unserialize(body, srl);
+
+	// convert to Response
+	// XXX: check type properly
+	std::unique_ptr<Response> resp(dynamic_cast<Response*>(msg));
 
 	switch (h.message_type)
 	{
 		case MessageType::MSG:
-			on_message(std::move(msg), seqh.request_id);
+			if (attached_session)
+				attached_session->on_message(std::move(resp));
+			else
+				throw std::runtime_error("Got message with no session!");
 			break;
+		// TODO: handle CLO
 		default:
 			assert(not_reached);
+	}
+}
+
+void opc_ua::tcp::MessageStream::attach_session(SessionStream& s)
+{
+	attached_session = &s;
+
+	if (established)
+		s.open_session();
+}
+
+opc_ua::tcp::SessionStream::SessionStream(const std::string& sess_name)
+	: secure_channel(nullptr), session_name(sess_name),
+	session_established(false)
+{
+}
+
+void opc_ua::tcp::SessionStream::attach(MessageStream& ms, const std::string& endpoint)
+{
+	secure_channel = &ms;
+	endpoint_uri = endpoint;
+	ms.attach_session(*this);
+}
+
+void opc_ua::tcp::SessionStream::open_session()
+{
+	opc_ua::CreateSessionRequest csr(
+		opc_ua::ApplicationType::CLIENT,
+		endpoint_uri,
+		session_name,
+		random_nonce(),
+		1E9);
+
+	secure_channel->write_message(csr);
+}
+
+void opc_ua::tcp::SessionStream::on_message(std::unique_ptr<Response> msg)
+{
+	if (msg->node_id() == CreateSessionResponse::NODE_ID)
+	{
+		session_established = true;
 	}
 }

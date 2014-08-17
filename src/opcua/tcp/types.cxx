@@ -16,6 +16,13 @@
 // Unix Epoch offset in seconds
 static opc_ua::Int64 unix_epoch_s = 11644478640;
 
+void opc_ua::tcp::BinarySerializer::serialize(SerializationContext& ctx, Boolean b)
+{
+	Byte i = b ? 1 : 0;
+
+	ctx.write(&i, sizeof(i));
+}
+
 void opc_ua::tcp::BinarySerializer::serialize(SerializationContext& ctx, Byte i)
 {
 	ctx.write(&i, sizeof(i));
@@ -246,6 +253,14 @@ void opc_ua::tcp::BinarySerializer::serialize(SerializationContext& ctx, const A
 	serialize(ctx, a_len);
 
 	a.serialize_all(ctx, *this);
+}
+
+void opc_ua::tcp::BinarySerializer::unserialize(SerializationContext& ctx, Boolean& b)
+{
+	Byte i;
+	ctx.read(&i, sizeof(i));
+
+	b = !!i;
 }
 
 void opc_ua::tcp::BinarySerializer::unserialize(SerializationContext& ctx, Byte& i)

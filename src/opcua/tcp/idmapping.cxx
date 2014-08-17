@@ -18,6 +18,8 @@ const opc_ua::tcp::NodeIdMappingType opc_ua::tcp::id_mapping{
 	{CloseSecureChannelResponse::NODE_ID, 455},
 	{CreateSessionRequest::NODE_ID, 461},
 	{CreateSessionResponse::NODE_ID, 464},
+	{CloseSessionRequest::NODE_ID, 473},
+	{CloseSessionResponse::NODE_ID, 476},
 };
 
 class reverse_map_iterator : public opc_ua::tcp::NodeIdMappingType::const_iterator

@@ -140,6 +140,7 @@ namespace opc_ua
 
 		struct BinarySerializer : public Serializer
 		{
+			virtual void serialize(SerializationContext& ctx, Boolean b);
 			virtual void serialize(SerializationContext& ctx, Byte i);
 			virtual void serialize(SerializationContext& ctx, UInt16 i);
 			virtual void serialize(SerializationContext& ctx, UInt32 i);
@@ -155,6 +156,7 @@ namespace opc_ua
 			virtual void serialize(SerializationContext& ctx, const ExtensionObject& s);
 			virtual void serialize(SerializationContext& ctx, const AbstractArraySerialization& a);
 
+			virtual void unserialize(SerializationContext& ctx, Boolean& b);
 			virtual void unserialize(SerializationContext& ctx, Byte& i);
 			virtual void unserialize(SerializationContext& ctx, UInt16& i);
 			virtual void unserialize(SerializationContext& ctx, Int32& i);

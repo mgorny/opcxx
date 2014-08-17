@@ -28,20 +28,11 @@ const opc_ua::MessageConstructorMap opc_ua::message_constructors{
 	M<CloseSecureChannelResponse>(),
 	M<CreateSessionRequest>(),
 	M<CreateSessionResponse>(),
+	M<CloseSessionRequest>(),
+	M<CloseSessionResponse>(),
 };
 
 opc_ua::RequestHeader::RequestHeader()
-{
-}
-
-opc_ua::RequestHeader::RequestHeader(UInt32 req_handle)
-	: authentication_token(0),
-	timestamp(DateTime::now()),
-	request_handle(req_handle),
-	return_diagnostics(0),
-	audit_entry_id(""),
-	timeout_hint(0),
-	additional_header()
 {
 }
 
@@ -109,9 +100,8 @@ opc_ua::OpenSecureChannelRequest::OpenSecureChannelRequest()
 {
 }
 
-opc_ua::OpenSecureChannelRequest::OpenSecureChannelRequest(UInt32 req_handle, SecurityTokenRequestType req_type, MessageSecurityMode req_mode, ByteString req_nonce, UInt32 req_lifetime)
-	: request_header(req_handle),
-	request_type(req_type),
+opc_ua::OpenSecureChannelRequest::OpenSecureChannelRequest(SecurityTokenRequestType req_type, MessageSecurityMode req_mode, ByteString req_nonce, UInt32 req_lifetime)
+	: request_type(req_type),
 	security_mode(req_mode),
 	client_nonce(req_nonce),
 	requested_lifetime(req_lifetime)
@@ -187,11 +177,6 @@ opc_ua::CloseSecureChannelRequest::CloseSecureChannelRequest()
 {
 }
 
-opc_ua::CloseSecureChannelRequest::CloseSecureChannelRequest(UInt32 req_handle)
-	: request_header(req_handle)
-{
-}
-
 void opc_ua::CloseSecureChannelRequest::serialize(SerializationContext& ctx, Serializer& s) const
 {
 	s.serialize(ctx, request_header);
@@ -258,9 +243,8 @@ opc_ua::CreateSessionRequest::CreateSessionRequest()
 {
 }
 
-opc_ua::CreateSessionRequest::CreateSessionRequest(UInt32 req_handle, ApplicationType app_type, String endpoint, String session, String nonce, Double session_timeout)
-	: request_header(req_handle),
-	client_description(app_type),
+opc_ua::CreateSessionRequest::CreateSessionRequest(ApplicationType app_type, String endpoint, String session, String nonce, Double session_timeout)
+	: client_description(app_type),
 	server_uri(),
 	endpoint_uri(endpoint),
 	session_name(session),
@@ -361,7 +345,6 @@ void opc_ua::EndpointDescription::unserialize(SerializationContext& ctx, Seriali
 }
 
 opc_ua::SignedSoftwareCertificate::SignedSoftwareCertificate()
-	: certificate_data(), signature()
 {
 }
 
@@ -395,10 +378,6 @@ void opc_ua::SignatureData::unserialize(SerializationContext& ctx, Serializer& s
 }
 
 opc_ua::CreateSessionResponse::CreateSessionResponse()
-	: response_header(), session_id(), authentication_token(),
-	revised_session_timeout(), server_nonce(), server_certificate(),
-	server_endpoints(), server_software_certificates(),
-	server_signature(), max_request_message_size()
 {
 }
 
@@ -428,4 +407,39 @@ void opc_ua::CreateSessionResponse::unserialize(SerializationContext& ctx, Seria
 	s.unserialize(ctx, ArrayUnserialization<SignedSoftwareCertificate>(server_software_certificates));
 	s.unserialize(ctx, server_signature);
 	s.unserialize(ctx, max_request_message_size);
+}
+
+opc_ua::CloseSessionRequest::CloseSessionRequest()
+{
+}
+
+opc_ua::CloseSessionRequest::CloseSessionRequest(Boolean del_subscriptions)
+	: delete_subscriptions(del_subscriptions)
+{
+}
+
+void opc_ua::CloseSessionRequest::serialize(SerializationContext& ctx, Serializer& s) const
+{
+	s.serialize(ctx, request_header);
+	s.serialize(ctx, delete_subscriptions);
+}
+
+void opc_ua::CloseSessionRequest::unserialize(SerializationContext& ctx, Serializer& s)
+{
+	s.unserialize(ctx, request_header);
+	s.unserialize(ctx, delete_subscriptions);
+}
+
+opc_ua::CloseSessionResponse::CloseSessionResponse()
+{
+}
+
+void opc_ua::CloseSessionResponse::serialize(SerializationContext& ctx, Serializer& s) const
+{
+	s.serialize(ctx, response_header);
+}
+
+void opc_ua::CloseSessionResponse::unserialize(SerializationContext& ctx, Serializer& s)
+{
+	s.unserialize(ctx, response_header);
 }

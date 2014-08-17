@@ -28,6 +28,7 @@ namespace opc_ua
 	{
 		// (opaque)
 		class MessageStream;
+		class SessionStream;
 
 		// Basic OPC UA TCP transport stream. Handles connecting and message
 		// headers.
@@ -55,7 +56,7 @@ namespace opc_ua
 			TransportStream(event_base* ev);
 			~TransportStream();
 
-			void connect_hostname(const char* hostname, uint16_t port, const char* endpoint, sa_family_t family = AF_UNSPEC);
+			void connect_hostname(const char* hostname, uint16_t port, const std::string& endpoint, sa_family_t family = AF_UNSPEC);
 			void write_message(MessageType msg_type, MessageIsFinal is_final, SerializationContext& msg, UInt32 secure_channel_id = 0);
 
 			// Queue a request for secure channel.
@@ -66,11 +67,14 @@ namespace opc_ua
 		class MessageStream
 		{
 			TransportStream& ts;
+			SessionStream* attached_session;
 
 			// sequential number source
 			static UInt32 sequence_number;
 			static UInt32 next_request_id;
 
+			// Is the channel established already?
+			bool established;
 			// OPN request identifier
 			UInt32 channel_request_id;
 			// secure channel id for write_message()
@@ -78,19 +82,11 @@ namespace opc_ua
 			// security token id for further messages
 			UInt32 token_id;
 
-		protected:
-			// Method called once MessageStream successfully establishes
-			// secure channel. Needs to be overriden by subclass.
-			virtual void on_connected() = 0;
-
-			// Method called when complete message is received.
-			virtual void on_message(std::unique_ptr<Message> msg, UInt32 request_id) = 0;
-
 		public:
 			MessageStream(TransportStream& new_ts);
 			~MessageStream();
 
-			void write_message(Message& msg, MessageType msg_type = MessageType::MSG);
+			void write_message(Request& msg, MessageType msg_type = MessageType::MSG);
 
 			// write secure channel request
 			void request_secure_channel();
@@ -101,6 +97,32 @@ namespace opc_ua
 			void close();
 			// handle incoming message.
 			void handle_message(MessageHeader& h, SerializationContext& body);
+
+			// Attach a new session stream.
+			void attach_session(SessionStream& s);
+		};
+
+		// Wrapper that establishes a session over MessageStream. Supports
+		// reattaching to a different TransportStream and resuming session.
+		class SessionStream
+		{
+			MessageStream* secure_channel;
+
+			std::string session_name;
+			// endpoint URI for session create request
+			std::string endpoint_uri;
+
+			bool session_established;
+
+		public:
+			SessionStream(const std::string& sess_name);
+
+			// Attach to a secure channel.
+			void attach(MessageStream& ms, const std::string& endpoint);
+			// Start/resume session.
+			void open_session();
+			// Handle incoming message.
+			void on_message(std::unique_ptr<Response> msg);
 		};
 	};
 };

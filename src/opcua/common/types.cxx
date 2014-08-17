@@ -9,6 +9,8 @@
 
 #include "types.hxx"
 
+#include <random>
+
 opc_ua::DateTime::DateTime()
 {
 }
@@ -43,4 +45,16 @@ opc_ua::NodeId::NodeId(const GUID& node_id, UInt16 node_ns)
 opc_ua::NodeId::NodeId(const ByteString& node_id, UInt16 node_ns)
 	: type(NodeIdType::BYTE_STRING), ns(node_ns), as_bytestring(node_id)
 {
+}
+
+opc_ua::ByteString opc_ua::random_nonce()
+{
+	std::random_device rnd("/dev/random");
+	std::uniform_int_distribution<opc_ua::Byte> dist;
+
+	ByteString ret;
+	for (int i = 0; i < 32; ++i)
+		ret.push_back(dist(rnd));
+
+	return std::move(ret);
 }

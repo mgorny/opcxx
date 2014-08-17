@@ -19,6 +19,7 @@ namespace opc_ua
 {
 	static_assert(sizeof(double) == 8, "only IEEE754 64-bit double supported ATM");
 
+	typedef bool Boolean;
 	typedef uint8_t Byte;
 	typedef uint16_t UInt16;
 	typedef uint32_t UInt32;
@@ -145,6 +146,7 @@ namespace opc_ua
 	// Abstract class defining serializations for known data types.
 	struct Serializer
 	{
+		virtual void serialize(SerializationContext& ctx, Boolean b) = 0;
 		virtual void serialize(SerializationContext& ctx, Byte i) = 0;
 		virtual void serialize(SerializationContext& ctx, UInt16 i) = 0;
 		virtual void serialize(SerializationContext& ctx, UInt32 i) = 0;
@@ -160,6 +162,7 @@ namespace opc_ua
 		virtual void serialize(SerializationContext& ctx, const ExtensionObject& s) = 0;
 		virtual void serialize(SerializationContext& ctx, const AbstractArraySerialization& a) = 0;
 
+		virtual void unserialize(SerializationContext& ctx, Boolean& b) = 0;
 		virtual void unserialize(SerializationContext& ctx, Byte& i) = 0;
 		virtual void unserialize(SerializationContext& ctx, UInt16& i) = 0;
 		virtual void unserialize(SerializationContext& ctx, Int32& i) = 0;
@@ -217,6 +220,9 @@ namespace opc_ua
 		for (T& i : _array)
 			s.unserialize(ctx, i);
 	}
+
+	// utility functions
+	ByteString random_nonce();
 };
 
 #endif /*OPCUA_COMMON_TYPES_HXX*/
