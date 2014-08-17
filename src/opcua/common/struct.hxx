@@ -316,6 +316,7 @@ namespace opc_ua
 		// metadata
 		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
 		virtual void unserialize(SerializationContext& ctx, Serializer& s);
+		virtual UInt32 node_id() const { return NODE_ID; }
 	};
 };
 

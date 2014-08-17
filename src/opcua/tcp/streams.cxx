@@ -282,7 +282,7 @@ bool opc_ua::tcp::MessageStream::process_secure_channel_response(SerializationCo
 	NodeId resp_id;
 
 	srl.unserialize(sctx, resp_id);
-	if (resp_id.type != NodeIdType::NUMERIC || resp_id.id.as_int != id_mapping.at(resp.node_id()))
+	if (resp_id.type != NodeIdType::NUMERIC || resp_id.as_int != id_mapping.at(resp.node_id()))
 		throw std::runtime_error("Unknown response for OPN");
 
 	srl.unserialize(sctx, resp);
@@ -331,7 +331,7 @@ void opc_ua::tcp::MessageStream::handle_message(MessageHeader& h, SerializationC
 	if (msg_id.ns != 0)
 		throw std::runtime_error("Non-standard namespace received");
 
-	UInt32 base_id = reverse_id_mapping.at(msg_id.id.as_int);
+	UInt32 base_id = reverse_id_mapping.at(msg_id.as_int);
 	std::unique_ptr<Message> msg(message_constructors.at(base_id)());
 	msg->unserialize(body, srl);
 

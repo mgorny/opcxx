@@ -57,18 +57,6 @@ void opc_ua::tcp::BinarySerializer::serialize(SerializationContext& ctx, const S
 		ctx.write(s.c_str(), s_len);
 }
 
-void opc_ua::tcp::BinarySerializer::serialize(SerializationContext& ctx, const Array<String>& a)
-{
-	Int32 a_len = a.size();
-	// TODO: allow proper distinction between null & empty array
-	if (a_len == 0)
-		a_len = -1;
-	serialize(ctx, a_len);
-
-	for (auto& s : a)
-		serialize(ctx, s);
-}
-
 void opc_ua::tcp::BinarySerializer::serialize(SerializationContext& ctx, DateTime t)
 {
 	// convert time_t to seconds since 1601-01-01
@@ -105,6 +93,21 @@ void opc_ua::tcp::BinarySerializer::serialize(SerializationContext& ctx, const L
 		serialize(ctx, s.text);
 }
 
+void opc_ua::tcp::BinarySerializer::serialize(SerializationContext& ctx, const GUID& g)
+{
+	// first 8 bytes go as little-endian integers
+	UInt32 data1 = g.guid[0] << 24 | g.guid[1] << 16 | g.guid[2] << 8 | g.guid[3];
+	UInt16 data2 = g.guid[4] << 8 | g.guid[5];
+	UInt16 data3 = g.guid[6] << 8 | g.guid[7];
+	// last 8 bytes go as bytes
+	const Byte* data4 = &g.guid[8];
+
+	serialize(ctx, data1);
+	serialize(ctx, data2);
+	serialize(ctx, data3);
+	ctx.write(data4, 8);
+}
+
 void opc_ua::tcp::BinarySerializer::serialize(SerializationContext& ctx, const NodeId& n)
 {
 	switch (n.type)
@@ -112,24 +115,38 @@ void opc_ua::tcp::BinarySerializer::serialize(SerializationContext& ctx, const N
 		case NodeIdType::NUMERIC:
 		{
 			// id can be encoded as two-byte id
-			if (n.id.as_int <= 0xff)
+			if (n.as_int <= 0xff)
 			{
 				serialize(ctx, static_cast<Byte>(BinaryNodeIdType::TWO_BYTE));
-				serialize(ctx, static_cast<Byte>(n.id.as_int));
+				serialize(ctx, static_cast<Byte>(n.as_int));
 			}
-			else if (n.ns <= 0xff && n.id.as_int <= 0xffff)
+			else if (n.ns <= 0xff && n.as_int <= 0xffff)
 			{
 				serialize(ctx, static_cast<Byte>(BinaryNodeIdType::FOUR_BYTE));
 				serialize(ctx, static_cast<Byte>(n.ns));
-				serialize(ctx, static_cast<UInt16>(n.id.as_int));
+				serialize(ctx, static_cast<UInt16>(n.as_int));
 			}
 			else
 			{
 				serialize(ctx, static_cast<Byte>(BinaryNodeIdType::NUMERIC));
-				serialize(ctx, static_cast<UInt16>(n.ns));
-				serialize(ctx, static_cast<UInt32>(n.id.as_int));
+				serialize(ctx, n.ns);
+				serialize(ctx, n.as_int);
 			}
 
+			break;
+		}
+		case NodeIdType::GUID:
+		{
+			serialize(ctx, static_cast<Byte>(BinaryNodeIdType::GUID));
+			serialize(ctx, n.ns);
+			serialize(ctx, n.as_guid);
+			break;
+		}
+		case NodeIdType::BYTE_STRING:
+		{
+			serialize(ctx, static_cast<Byte>(BinaryNodeIdType::BYTE_STRING));
+			serialize(ctx, n.ns);
+			serialize(ctx, n.as_bytestring);
 			break;
 		}
 		default:
@@ -220,6 +237,17 @@ void opc_ua::tcp::BinarySerializer::serialize(SerializationContext& ctx, const S
 	serialize(ctx, h.request_id);
 }
 
+void opc_ua::tcp::BinarySerializer::serialize(SerializationContext& ctx, const AbstractArraySerialization& a)
+{
+	Int32 a_len = a.size();
+	// TODO: allow proper distinction between null & empty array
+	if (a_len == 0)
+		a_len = -1;
+	serialize(ctx, a_len);
+
+	a.serialize_all(ctx, *this);
+}
+
 void opc_ua::tcp::BinarySerializer::unserialize(SerializationContext& ctx, Byte& i)
 {
 	ctx.read(&i, sizeof(i));
@@ -266,20 +294,6 @@ void opc_ua::tcp::BinarySerializer::unserialize(SerializationContext& ctx, Strin
 	}
 }
 
-void opc_ua::tcp::BinarySerializer::unserialize(SerializationContext& ctx, Array<String>& a)
-{
-	Int32 length;
-	ctx.read(&length, sizeof(length));
-
-	a.clear();
-	if (length != -1)
-	{
-		String s;
-		unserialize(ctx, s);
-		a.push_back(s);
-	}
-}
-
 void opc_ua::tcp::BinarySerializer::unserialize(SerializationContext& ctx, DateTime& t)
 {
 	Int64 ts;
@@ -308,6 +322,30 @@ void opc_ua::tcp::BinarySerializer::unserialize(SerializationContext& ctx, Local
 		unserialize(ctx, s.text);
 	else
 		s.text.clear();
+}
+
+void opc_ua::tcp::BinarySerializer::unserialize(SerializationContext& ctx, GUID& g)
+{
+	UInt32 data1;
+	UInt16 data2;
+	UInt16 data3;
+
+	unserialize(ctx, data1);
+	unserialize(ctx, data2);
+	unserialize(ctx, data3);
+
+	// first 8 bytes go as little-endian integers
+	g.guid[0] = (data1 >> 24) & 0xff;
+	g.guid[1] = (data1 >> 16) & 0xff;
+	g.guid[2] = (data1 >> 8) & 0xff;
+	g.guid[3] = data1 & 0xff;
+	g.guid[4] = (data2 >> 8) & 0xff;
+	g.guid[5] = data2 & 0xff;
+	g.guid[6] = (data2 >> 8) & 0xff;
+	g.guid[7] = data2 & 0xff;
+
+	// last 8 bytes go as bytes
+	ctx.read(&g.guid[8], 8);
 }
 
 void opc_ua::tcp::BinarySerializer::unserialize(SerializationContext& ctx, NodeId& n)
@@ -343,6 +381,24 @@ void opc_ua::tcp::BinarySerializer::unserialize(SerializationContext& ctx, NodeI
 			n = NodeId(id, ns);
 			break;
 		}
+		case BinaryNodeIdType::GUID:
+		{
+			UInt16 ns;
+			GUID guid;
+			unserialize(ctx, ns);
+			unserialize(ctx, guid);
+			n = NodeId(guid, ns);
+			break;
+		}
+		case BinaryNodeIdType::BYTE_STRING:
+		{
+			UInt16 ns;
+			ByteString id;
+			unserialize(ctx, ns);
+			unserialize(ctx, id);
+			n = NodeId(id, ns);
+			break;
+		}
 		default:
 			assert(not_reached);
 	}
@@ -362,7 +418,7 @@ void opc_ua::tcp::BinarySerializer::unserialize(SerializationContext& ctx, Exten
 	unserialize(ctx, id);
 	unserialize(ctx, encoding);
 
-	if (id.type != NodeIdType::NUMERIC || id.ns != 0 || id.id.as_int != 0
+	if (id.type != NodeIdType::NUMERIC || id.ns != 0 || id.as_int != 0
 			|| encoding != 0)
 		throw std::runtime_error("ExtensionObjects are not supported at the moment");
 }
@@ -431,4 +487,14 @@ void opc_ua::tcp::BinarySerializer::unserialize(SerializationContext& ctx, Seque
 {
 	unserialize(ctx, h.sequence_number);
 	unserialize(ctx, h.request_id);
+}
+
+void opc_ua::tcp::BinarySerializer::unserialize(SerializationContext& ctx, const AbstractArrayUnserialization& a)
+{
+	Int32 length;
+	ctx.read(&length, sizeof(length));
+
+	a.clear();
+	if (length > 0)
+		a.unserialize_n(ctx, *this, length);
 }

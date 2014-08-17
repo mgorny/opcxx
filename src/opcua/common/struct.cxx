@@ -26,6 +26,8 @@ const opc_ua::MessageConstructorMap opc_ua::message_constructors{
 	M<OpenSecureChannelResponse>(),
 	M<CloseSecureChannelRequest>(),
 	M<CloseSecureChannelResponse>(),
+	M<CreateSessionRequest>(),
+	M<CreateSessionResponse>(),
 };
 
 opc_ua::RequestHeader::RequestHeader()
@@ -89,7 +91,7 @@ void opc_ua::ResponseHeader::serialize(SerializationContext& ctx, Serializer& s)
 	s.serialize(ctx, request_handle);
 	s.serialize(ctx, service_result);
 	s.serialize(ctx, service_diagnostics);
-	s.serialize(ctx, string_table);
+	s.serialize(ctx, ArraySerialization<String>(string_table));
 	s.serialize(ctx, additional_header);
 }
 
@@ -99,7 +101,7 @@ void opc_ua::ResponseHeader::unserialize(SerializationContext& ctx, Serializer& 
 	s.unserialize(ctx, request_handle);
 	s.unserialize(ctx, service_result);
 	s.unserialize(ctx, service_diagnostics);
-	s.unserialize(ctx, string_table);
+	s.unserialize(ctx, ArrayUnserialization<String>(string_table));
 	s.unserialize(ctx, additional_header);
 }
 
@@ -234,7 +236,7 @@ void opc_ua::ApplicationDescription::serialize(SerializationContext& ctx, Serial
 	s.serialize(ctx, static_cast<UInt32>(application_type));
 	s.serialize(ctx, gateway_server_uri);
 	s.serialize(ctx, discovery_profile_uri);
-	s.serialize(ctx, discovery_urls);
+	s.serialize(ctx, ArraySerialization<String>(discovery_urls));
 }
 
 void opc_ua::ApplicationDescription::unserialize(SerializationContext& ctx, Serializer& s)
@@ -247,7 +249,7 @@ void opc_ua::ApplicationDescription::unserialize(SerializationContext& ctx, Seri
 	s.unserialize(ctx, app_type);
 	s.unserialize(ctx, gateway_server_uri);
 	s.unserialize(ctx, discovery_profile_uri);
-	s.unserialize(ctx, discovery_urls);
+	s.unserialize(ctx, ArrayUnserialization<String>(discovery_urls));
 
 	application_type = static_cast<ApplicationType>(app_type);
 }
@@ -337,7 +339,7 @@ void opc_ua::EndpointDescription::serialize(SerializationContext& ctx, Serialize
 	s.serialize(ctx, server_certificate);
 	s.serialize(ctx, static_cast<UInt32>(security_mode));
 	s.serialize(ctx, security_policy_uri);
-//	s.serialize(ctx, user_identity_tokens);
+	s.serialize(ctx, ArraySerialization<UserTokenPolicy>(user_identity_tokens));
 	s.serialize(ctx, transport_profile_uri);
 	s.serialize(ctx, security_level);
 }
@@ -351,7 +353,7 @@ void opc_ua::EndpointDescription::unserialize(SerializationContext& ctx, Seriali
 	s.unserialize(ctx, server_certificate);
 	s.unserialize(ctx, security_mode_i);
 	s.unserialize(ctx, security_policy_uri);
-//	s.unserialize(ctx, user_identity_tokens);
+	s.unserialize(ctx, ArrayUnserialization<UserTokenPolicy>(user_identity_tokens));
 	s.unserialize(ctx, transport_profile_uri);
 	s.unserialize(ctx, security_level);
 
@@ -408,8 +410,8 @@ void opc_ua::CreateSessionResponse::serialize(SerializationContext& ctx, Seriali
 	s.serialize(ctx, revised_session_timeout);
 	s.serialize(ctx, server_nonce);
 	s.serialize(ctx, server_certificate);
-//	s.serialize(ctx, server_endpoints);
-//	s.serialize(ctx, server_software_certificates);
+	s.serialize(ctx, ArraySerialization<EndpointDescription>(server_endpoints));
+	s.serialize(ctx, ArraySerialization<SignedSoftwareCertificate>(server_software_certificates));
 	s.serialize(ctx, server_signature);
 	s.serialize(ctx, max_request_message_size);
 }
@@ -422,8 +424,8 @@ void opc_ua::CreateSessionResponse::unserialize(SerializationContext& ctx, Seria
 	s.unserialize(ctx, revised_session_timeout);
 	s.unserialize(ctx, server_nonce);
 	s.unserialize(ctx, server_certificate);
-//	s.unserialize(ctx, server_endpoints);
-//	s.unserialize(ctx, server_software_certificates);
+	s.unserialize(ctx, ArrayUnserialization<EndpointDescription>(server_endpoints));
+	s.unserialize(ctx, ArrayUnserialization<SignedSoftwareCertificate>(server_software_certificates));
 	s.unserialize(ctx, server_signature);
 	s.unserialize(ctx, max_request_message_size);
 }

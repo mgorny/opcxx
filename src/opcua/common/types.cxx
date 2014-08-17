@@ -31,6 +31,16 @@ opc_ua::NodeId::NodeId()
 }
 
 opc_ua::NodeId::NodeId(UInt32 node_id, UInt16 node_ns)
-	: type(NodeIdType::NUMERIC), ns(node_ns), id({ .as_int = node_id })
+	: type(NodeIdType::NUMERIC), ns(node_ns), as_int(node_id)
+{
+}
+
+opc_ua::NodeId::NodeId(const GUID& node_id, UInt16 node_ns)
+	: type(NodeIdType::GUID), ns(node_ns), as_guid(node_id)
+{
+}
+
+opc_ua::NodeId::NodeId(const ByteString& node_id, UInt16 node_ns)
+	: type(NodeIdType::BYTE_STRING), ns(node_ns), as_bytestring(node_id)
 {
 }

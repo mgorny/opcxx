@@ -149,10 +149,11 @@ namespace opc_ua
 			virtual void serialize(SerializationContext& ctx, const String& s);
 			virtual void serialize(SerializationContext& ctx, DateTime t);
 			virtual void serialize(SerializationContext& ctx, const LocalizedText& s);
+			virtual void serialize(SerializationContext& ctx, const GUID& g);
 			virtual void serialize(SerializationContext& ctx, const NodeId& n);
 			virtual void serialize(SerializationContext& ctx, const Struct& s);
-			virtual void serialize(SerializationContext& ctx, const Array<String>& a);
 			virtual void serialize(SerializationContext& ctx, const ExtensionObject& s);
+			virtual void serialize(SerializationContext& ctx, const AbstractArraySerialization& a);
 
 			virtual void unserialize(SerializationContext& ctx, Byte& i);
 			virtual void unserialize(SerializationContext& ctx, UInt16& i);
@@ -163,10 +164,11 @@ namespace opc_ua
 			virtual void unserialize(SerializationContext& ctx, String& s);
 			virtual void unserialize(SerializationContext& ctx, DateTime& t);
 			virtual void unserialize(SerializationContext& ctx, LocalizedText& s);
+			virtual void unserialize(SerializationContext& ctx, GUID& g);
 			virtual void unserialize(SerializationContext& ctx, NodeId& n);
 			virtual void unserialize(SerializationContext& ctx, Struct& s);
-			virtual void unserialize(SerializationContext& ctx, Array<String>& a);
 			virtual void unserialize(SerializationContext& ctx, ExtensionObject& s);
+			virtual void unserialize(SerializationContext& ctx, const AbstractArrayUnserialization& a);
 
 			// UA TCP specific types
 			void serialize(SerializationContext& ctx, MessageIsFinal b);
