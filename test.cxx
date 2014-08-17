@@ -26,6 +26,9 @@ class MyStream : public opc_ua::tcp::MessageStream
 protected:
 	void on_connected()
 	{
+		opc_ua::CreateSessionRequest csr(11, opc_ua::ApplicationType::CLIENT, endpoint, "dupa", "12345678901234567890123456789012", 1E9);
+
+		write_message(csr);
 //		close();
 	}
 
@@ -67,7 +70,7 @@ int main()
 
 	opc_ua::tcp::TransportStream f(ev);
 	MyStream ms1(f);
-	MyStream2 ms2(f);
+//	MyStream2 ms2(f);
 
 	f.connect_hostname("127.0.0.1", 6001, endpoint.c_str());
 

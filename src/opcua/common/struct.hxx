@@ -28,7 +28,6 @@ namespace opc_ua
 		UInt32 return_diagnostics;
 		String audit_entry_id;
 		UInt32 timeout_hint;
-		// XXX: this should be ExtensionObject
 		ExtensionObject additional_header;
 
 		// non-initializing constructor
@@ -172,6 +171,151 @@ namespace opc_ua
 		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
 		virtual void unserialize(SerializationContext& ctx, Serializer& s);
 		virtual UInt32 node_id() const { return NODE_ID; }
+	};
+
+	enum class ApplicationType
+	{
+		SERVER = 0,
+		CLIENT = 1,
+		CLIENT_AND_SERVER = 2,
+		DISCOVERY_SERVER = 3,
+	};
+
+	struct ApplicationDescription : Struct
+	{
+		String application_uri;
+		String product_uri;
+		LocalizedText application_name;
+		ApplicationType application_type;
+		String gateway_server_uri;
+		String discovery_profile_uri;
+		Array<String> discovery_urls;
+
+		// non-initializing constructor
+		ApplicationDescription();
+		// initializing constructor
+		ApplicationDescription(ApplicationType app_type);
+
+		// metadata
+		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
+		virtual void unserialize(SerializationContext& ctx, Serializer& s);
+	};
+
+	struct CreateSessionRequest : Message
+	{
+		static constexpr UInt32 NODE_ID = 459;
+
+		RequestHeader request_header;
+		ApplicationDescription client_description;
+		String server_uri;
+		String endpoint_uri;
+		String session_name;
+		ByteString client_nonce;
+		ByteString client_certificate;
+		Double requested_session_timeout;
+		UInt32 max_response_message_size;
+
+		// non-initializing constructor
+		CreateSessionRequest();
+		// initializing constructor
+		CreateSessionRequest(UInt32 req_handle, ApplicationType app_type, String endpoint, String session, String nonce, Double session_timeout);
+
+		// metadata
+		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
+		virtual void unserialize(SerializationContext& ctx, Serializer& s);
+		virtual UInt32 node_id() const { return NODE_ID; }
+	};
+
+	enum class UserTokenType
+	{
+		ANONYMOUS = 0,
+		USER_NAME = 1,
+		CERTIFICATE = 2,
+		ISSUED_TOKEN = 3,
+	};
+
+	struct UserTokenPolicy : Struct
+	{
+		String policy_id;
+		UserTokenType token_type;
+		String issued_token_type;
+		String issuer_endpoint_url;
+		String security_policy_uri;
+
+		// non-initializing constructor
+		UserTokenPolicy();
+
+		// metadata
+		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
+		virtual void unserialize(SerializationContext& ctx, Serializer& s);
+	};
+
+	struct EndpointDescription : Struct
+	{
+		String endpoint_url;
+		ApplicationDescription server;
+		ByteString server_certificate;
+		MessageSecurityMode security_mode;
+		String security_policy_uri;
+		Array<UserTokenPolicy> user_identity_tokens;
+		String transport_profile_uri;
+		Byte security_level;
+
+		// non-initializing constructor
+		EndpointDescription();
+
+		// metadata
+		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
+		virtual void unserialize(SerializationContext& ctx, Serializer& s);
+	};
+
+	struct SignedSoftwareCertificate : Struct
+	{
+		ByteString certificate_data;
+		ByteString signature;
+
+		// non-initializing constructor
+		SignedSoftwareCertificate();
+
+		// metadata
+		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
+		virtual void unserialize(SerializationContext& ctx, Serializer& s);
+	};
+
+	struct SignatureData : Struct
+	{
+		String algorithm;
+		ByteString signature;
+
+		// non-initializing constructor
+		SignatureData();
+
+		// metadata
+		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
+		virtual void unserialize(SerializationContext& ctx, Serializer& s);
+	};
+
+	struct CreateSessionResponse : Message
+	{
+		static constexpr UInt32 NODE_ID = 462;
+
+		ResponseHeader response_header;
+		NodeId session_id;
+		NodeId authentication_token;
+		Double revised_session_timeout;
+		ByteString server_nonce;
+		ByteString server_certificate;
+		Array<EndpointDescription> server_endpoints;
+		Array<SignedSoftwareCertificate> server_software_certificates;
+		SignatureData server_signature;
+		UInt32 max_request_message_size;
+
+		// non-initializing constructor
+		CreateSessionResponse();
+
+		// metadata
+		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
+		virtual void unserialize(SerializationContext& ctx, Serializer& s);
 	};
 };
 

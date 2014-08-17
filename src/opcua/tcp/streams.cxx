@@ -256,7 +256,7 @@ void opc_ua::tcp::MessageStream::write_message(Message& msg, MessageType msg_typ
 	srl.serialize(sctx, msg_id);
 	srl.serialize(sctx, msg);
 
-	ts.write_message(msg_type, MessageIsFinal::FINAL, sctx);
+	ts.write_message(msg_type, MessageIsFinal::FINAL, sctx, secure_channel_id);
 }
 
 void opc_ua::tcp::MessageStream::request_secure_channel()
@@ -291,6 +291,7 @@ bool opc_ua::tcp::MessageStream::process_secure_channel_response(SerializationCo
 	if (seqh.request_id == channel_request_id)
 	{
 		secure_channel_id = channel_id;
+		assert(secure_channel_id == resp.security_token.channel_id);
 		token_id = resp.security_token.token_id;
 		on_connected();
 		return true;
@@ -312,7 +313,7 @@ void opc_ua::tcp::MessageStream::handle_message(MessageHeader& h, SerializationC
 	SymmetricAlgorithmSecurityHeader sech;
 	srl.unserialize(body, sech);
 
-	if (sech.token_id == token_id)
+	if (sech.token_id != token_id)
 		throw std::runtime_error("Incorrect token ID received");
 
 	SequenceHeader seqh;

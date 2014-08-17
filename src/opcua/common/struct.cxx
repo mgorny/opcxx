@@ -213,3 +213,217 @@ void opc_ua::CloseSecureChannelResponse::unserialize(SerializationContext& ctx, 
 {
 	s.unserialize(ctx, response_header);
 }
+
+opc_ua::ApplicationDescription::ApplicationDescription()
+{
+}
+
+opc_ua::ApplicationDescription::ApplicationDescription(ApplicationType app_type)
+	: application_uri(), product_uri(),
+	application_name(), application_type(app_type),
+	gateway_server_uri(), discovery_profile_uri(),
+	discovery_urls()
+{
+}
+
+void opc_ua::ApplicationDescription::serialize(SerializationContext& ctx, Serializer& s) const
+{
+	s.serialize(ctx, application_uri);
+	s.serialize(ctx, product_uri);
+	s.serialize(ctx, application_name);
+	s.serialize(ctx, static_cast<UInt32>(application_type));
+	s.serialize(ctx, gateway_server_uri);
+	s.serialize(ctx, discovery_profile_uri);
+	s.serialize(ctx, discovery_urls);
+}
+
+void opc_ua::ApplicationDescription::unserialize(SerializationContext& ctx, Serializer& s)
+{
+	UInt32 app_type;
+
+	s.unserialize(ctx, application_uri);
+	s.unserialize(ctx, product_uri);
+	s.unserialize(ctx, application_name);
+	s.unserialize(ctx, app_type);
+	s.unserialize(ctx, gateway_server_uri);
+	s.unserialize(ctx, discovery_profile_uri);
+	s.unserialize(ctx, discovery_urls);
+
+	application_type = static_cast<ApplicationType>(app_type);
+}
+
+opc_ua::CreateSessionRequest::CreateSessionRequest()
+{
+}
+
+opc_ua::CreateSessionRequest::CreateSessionRequest(UInt32 req_handle, ApplicationType app_type, String endpoint, String session, String nonce, Double session_timeout)
+	: request_header(req_handle),
+	client_description(app_type),
+	server_uri(),
+	endpoint_uri(endpoint),
+	session_name(session),
+	client_nonce(nonce),
+	client_certificate(),
+	requested_session_timeout(session_timeout),
+	max_response_message_size(0x1000000)
+{
+}
+
+void opc_ua::CreateSessionRequest::serialize(SerializationContext& ctx, Serializer& s) const
+{
+	s.serialize(ctx, request_header);
+	s.serialize(ctx, client_description);
+	s.serialize(ctx, server_uri);
+	s.serialize(ctx, endpoint_uri);
+	s.serialize(ctx, session_name);
+	s.serialize(ctx, client_nonce);
+	s.serialize(ctx, client_certificate);
+	s.serialize(ctx, requested_session_timeout);
+	s.serialize(ctx, max_response_message_size);
+}
+
+void opc_ua::CreateSessionRequest::unserialize(SerializationContext& ctx, Serializer& s)
+{
+	s.unserialize(ctx, request_header);
+	s.unserialize(ctx, client_description);
+	s.unserialize(ctx, server_uri);
+	s.unserialize(ctx, endpoint_uri);
+	s.unserialize(ctx, session_name);
+	s.unserialize(ctx, client_nonce);
+	s.unserialize(ctx, client_certificate);
+	s.unserialize(ctx, requested_session_timeout);
+	s.unserialize(ctx, max_response_message_size);
+}
+
+opc_ua::UserTokenPolicy::UserTokenPolicy()
+	: policy_id(), token_type(), issued_token_type(),
+	issuer_endpoint_url(), security_policy_uri()
+{
+}
+
+void opc_ua::UserTokenPolicy::serialize(SerializationContext& ctx, Serializer& s) const
+{
+	s.serialize(ctx, policy_id);
+	s.serialize(ctx, static_cast<UInt32>(token_type));
+	s.serialize(ctx, issued_token_type);
+	s.serialize(ctx, issuer_endpoint_url);
+	s.serialize(ctx, security_policy_uri);
+}
+
+void opc_ua::UserTokenPolicy::unserialize(SerializationContext& ctx, Serializer& s)
+{
+	UInt32 token_type_i;
+
+	s.unserialize(ctx, policy_id);
+	s.unserialize(ctx, token_type_i);
+	s.unserialize(ctx, issued_token_type);
+	s.unserialize(ctx, issuer_endpoint_url);
+	s.unserialize(ctx, security_policy_uri);
+
+	token_type = static_cast<UserTokenType>(token_type_i);
+}
+
+opc_ua::EndpointDescription::EndpointDescription()
+	: endpoint_url(), server(), server_certificate(),
+	security_mode(), security_policy_uri(), user_identity_tokens(),
+	transport_profile_uri(), security_level()
+{
+}
+
+void opc_ua::EndpointDescription::serialize(SerializationContext& ctx, Serializer& s) const
+{
+	s.serialize(ctx, endpoint_url);
+	s.serialize(ctx, server);
+	s.serialize(ctx, server_certificate);
+	s.serialize(ctx, static_cast<UInt32>(security_mode));
+	s.serialize(ctx, security_policy_uri);
+//	s.serialize(ctx, user_identity_tokens);
+	s.serialize(ctx, transport_profile_uri);
+	s.serialize(ctx, security_level);
+}
+
+void opc_ua::EndpointDescription::unserialize(SerializationContext& ctx, Serializer& s)
+{
+	UInt32 security_mode_i;
+
+	s.unserialize(ctx, endpoint_url);
+	s.unserialize(ctx, server);
+	s.unserialize(ctx, server_certificate);
+	s.unserialize(ctx, security_mode_i);
+	s.unserialize(ctx, security_policy_uri);
+//	s.unserialize(ctx, user_identity_tokens);
+	s.unserialize(ctx, transport_profile_uri);
+	s.unserialize(ctx, security_level);
+
+	security_mode = static_cast<MessageSecurityMode>(security_mode_i);
+}
+
+opc_ua::SignedSoftwareCertificate::SignedSoftwareCertificate()
+	: certificate_data(), signature()
+{
+}
+
+void opc_ua::SignedSoftwareCertificate::serialize(SerializationContext& ctx, Serializer& s) const
+{
+	s.serialize(ctx, certificate_data);
+	s.serialize(ctx, signature);
+}
+
+void opc_ua::SignedSoftwareCertificate::unserialize(SerializationContext& ctx, Serializer& s)
+{
+	s.unserialize(ctx, certificate_data);
+	s.unserialize(ctx, signature);
+}
+
+opc_ua::SignatureData::SignatureData()
+	: algorithm(), signature()
+{
+}
+
+void opc_ua::SignatureData::serialize(SerializationContext& ctx, Serializer& s) const
+{
+	s.serialize(ctx, algorithm);
+	s.serialize(ctx, signature);
+}
+
+void opc_ua::SignatureData::unserialize(SerializationContext& ctx, Serializer& s)
+{
+	s.unserialize(ctx, algorithm);
+	s.unserialize(ctx, signature);
+}
+
+opc_ua::CreateSessionResponse::CreateSessionResponse()
+	: response_header(), session_id(), authentication_token(),
+	revised_session_timeout(), server_nonce(), server_certificate(),
+	server_endpoints(), server_software_certificates(),
+	server_signature(), max_request_message_size()
+{
+}
+
+void opc_ua::CreateSessionResponse::serialize(SerializationContext& ctx, Serializer& s) const
+{
+	s.serialize(ctx, response_header);
+	s.serialize(ctx, session_id);
+	s.serialize(ctx, authentication_token);
+	s.serialize(ctx, revised_session_timeout);
+	s.serialize(ctx, server_nonce);
+	s.serialize(ctx, server_certificate);
+//	s.serialize(ctx, server_endpoints);
+//	s.serialize(ctx, server_software_certificates);
+	s.serialize(ctx, server_signature);
+	s.serialize(ctx, max_request_message_size);
+}
+
+void opc_ua::CreateSessionResponse::unserialize(SerializationContext& ctx, Serializer& s)
+{
+	s.unserialize(ctx, response_header);
+	s.unserialize(ctx, session_id);
+	s.unserialize(ctx, authentication_token);
+	s.unserialize(ctx, revised_session_timeout);
+	s.unserialize(ctx, server_nonce);
+	s.unserialize(ctx, server_certificate);
+//	s.unserialize(ctx, server_endpoints);
+//	s.unserialize(ctx, server_software_certificates);
+	s.unserialize(ctx, server_signature);
+	s.unserialize(ctx, max_request_message_size);
+}

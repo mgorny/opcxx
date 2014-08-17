@@ -41,6 +41,11 @@ void opc_ua::tcp::BinarySerializer::serialize(SerializationContext& ctx, Int64 i
 	ctx.write(&i, sizeof(i));
 }
 
+void opc_ua::tcp::BinarySerializer::serialize(SerializationContext& ctx, Double f)
+{
+	ctx.write(&f, sizeof(f));
+}
+
 void opc_ua::tcp::BinarySerializer::serialize(SerializationContext& ctx, const String& s)
 {
 	Int32 s_len = s.size();
@@ -76,6 +81,28 @@ void opc_ua::tcp::BinarySerializer::serialize(SerializationContext& ctx, DateTim
 		ts = 0;
 
 	serialize(ctx, ts);
+}
+
+struct LocalizedTextEncodingMask
+{
+	static constexpr opc_ua::Byte LOCALE_SPECIFIED = 0x01;
+	static constexpr opc_ua::Byte TEXT_SPECIFIED = 0x02;
+};
+
+void opc_ua::tcp::BinarySerializer::serialize(SerializationContext& ctx, const LocalizedText& s)
+{
+	Byte flags = 0;
+
+	if (!s.locale.empty())
+		flags |= LocalizedTextEncodingMask::LOCALE_SPECIFIED;
+	if (!s.text.empty())
+		flags |= LocalizedTextEncodingMask::TEXT_SPECIFIED;
+
+	serialize(ctx, flags);
+	if (!s.locale.empty())
+		serialize(ctx, s.locale);
+	if (!s.text.empty())
+		serialize(ctx, s.text);
 }
 
 void opc_ua::tcp::BinarySerializer::serialize(SerializationContext& ctx, const NodeId& n)
@@ -218,6 +245,11 @@ void opc_ua::tcp::BinarySerializer::unserialize(SerializationContext& ctx, Int64
 	ctx.read(&i, sizeof(i));
 }
 
+void opc_ua::tcp::BinarySerializer::unserialize(SerializationContext& ctx, Double& f)
+{
+	ctx.read(&f, sizeof(f));
+}
+
 void opc_ua::tcp::BinarySerializer::unserialize(SerializationContext& ctx, String& s)
 {
 	Int32 length;
@@ -259,6 +291,23 @@ void opc_ua::tcp::BinarySerializer::unserialize(SerializationContext& ctx, DateT
 	ts /= 1E7;
 	// and readjust to unix Epoch
 	t.ts.tv_sec = ts - unix_epoch_s;
+}
+
+void opc_ua::tcp::BinarySerializer::unserialize(SerializationContext& ctx, LocalizedText& s)
+{
+	Byte flags;
+
+	unserialize(ctx, flags);
+
+	if (flags & LocalizedTextEncodingMask::LOCALE_SPECIFIED)
+		unserialize(ctx, s.locale);
+	else
+		s.locale.clear();
+
+	if (flags & LocalizedTextEncodingMask::TEXT_SPECIFIED)
+		unserialize(ctx, s.text);
+	else
+		s.text.clear();
 }
 
 void opc_ua::tcp::BinarySerializer::unserialize(SerializationContext& ctx, NodeId& n)

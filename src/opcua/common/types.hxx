@@ -22,6 +22,7 @@ namespace opc_ua
 	typedef uint32_t UInt32;
 	typedef int32_t Int32;
 	typedef int64_t Int64;
+	typedef double Double;
 	// TODO: support NULL value
 	typedef std::string String;
 	typedef std::string ByteString;
@@ -37,6 +38,12 @@ namespace opc_ua
 
 		// get current time with max available precision
 		static DateTime now();
+	};
+
+	struct LocalizedText
+	{
+		String locale;
+		String text;
 	};
 
 	enum class NodeIdType
@@ -82,6 +89,23 @@ namespace opc_ua
 	template <class T>
 	using Array = std::vector<T>;
 
+	class AbstractArraySerialization
+	{
+	public:
+	};
+
+	template <class T>
+	class ArraySerialization : public AbstractArraySerialization
+	{
+		Array<T>& _array;
+
+	public:
+		ArraySerialization(Array<T>& array)
+			: _array(array)
+		{
+		}
+	};
+
 	// Abstract class defining serializations for known data types.
 	struct Serializer
 	{
@@ -90,8 +114,10 @@ namespace opc_ua
 		virtual void serialize(SerializationContext& ctx, UInt32 i) = 0;
 		virtual void serialize(SerializationContext& ctx, Int32 i) = 0;
 		virtual void serialize(SerializationContext& ctx, Int64 i) = 0;
+		virtual void serialize(SerializationContext& ctx, Double f) = 0;
 		virtual void serialize(SerializationContext& ctx, const String& s) = 0;
 		virtual void serialize(SerializationContext& ctx, DateTime t) = 0;
+		virtual void serialize(SerializationContext& ctx, const LocalizedText& s) = 0;
 		virtual void serialize(SerializationContext& ctx, const NodeId& n) = 0;
 		virtual void serialize(SerializationContext& ctx, const Struct& s) = 0;
 		virtual void serialize(SerializationContext& ctx, const Array<String>& a) = 0;
@@ -102,7 +128,9 @@ namespace opc_ua
 		virtual void unserialize(SerializationContext& ctx, Int32& i) = 0;
 		virtual void unserialize(SerializationContext& ctx, UInt32& i) = 0;
 		virtual void unserialize(SerializationContext& ctx, Int64& i) = 0;
+		virtual void unserialize(SerializationContext& ctx, Double& f) = 0;
 		virtual void unserialize(SerializationContext& ctx, String& s) = 0;
+		virtual void unserialize(SerializationContext& ctx, LocalizedText& s) = 0;
 		virtual void unserialize(SerializationContext& ctx, DateTime& t) = 0;
 		virtual void unserialize(SerializationContext& ctx, NodeId& n) = 0;
 		virtual void unserialize(SerializationContext& ctx, Struct& s) = 0;
