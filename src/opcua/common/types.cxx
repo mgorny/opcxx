@@ -12,6 +12,7 @@
 #include <random>
 
 opc_ua::DateTime::DateTime()
+	: ts({ .tv_sec = 0, .tv_nsec = 0})
 {
 }
 
@@ -26,10 +27,6 @@ opc_ua::DateTime opc_ua::DateTime::now()
 	clock_gettime(CLOCK_REALTIME, &ts);
 
 	return DateTime(ts);
-}
-
-opc_ua::NodeId::NodeId()
-{
 }
 
 opc_ua::NodeId::NodeId(UInt32 node_id, UInt16 node_ns)

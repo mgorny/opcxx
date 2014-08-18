@@ -18,6 +18,8 @@ const opc_ua::tcp::NodeIdMappingType opc_ua::tcp::id_mapping{
 	{CloseSecureChannelResponse::NODE_ID, 455},
 	{CreateSessionRequest::NODE_ID, 461},
 	{CreateSessionResponse::NODE_ID, 464},
+	{ActivateSessionRequest::NODE_ID, 467},
+	{ActivateSessionResponse::NODE_ID, 470},
 	{CloseSessionRequest::NODE_ID, 473},
 	{CloseSessionResponse::NODE_ID, 476},
 };

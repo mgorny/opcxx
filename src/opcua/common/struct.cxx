@@ -28,11 +28,16 @@ const opc_ua::MessageConstructorMap opc_ua::message_constructors{
 	M<CloseSecureChannelResponse>(),
 	M<CreateSessionRequest>(),
 	M<CreateSessionResponse>(),
+	M<ActivateSessionRequest>(),
+	M<ActivateSessionResponse>(),
 	M<CloseSessionRequest>(),
 	M<CloseSessionResponse>(),
 };
 
 opc_ua::RequestHeader::RequestHeader()
+	: authentication_token(), timestamp(),
+	request_handle(0), return_diagnostics(0),
+	audit_entry_id(), timeout_hint(0), additional_header()
 {
 }
 
@@ -59,6 +64,7 @@ void opc_ua::RequestHeader::unserialize(SerializationContext& ctx, Serializer& s
 }
 
 opc_ua::DiagnosticInfo::DiagnosticInfo()
+	: flags(0)
 {
 }
 
@@ -73,6 +79,8 @@ void opc_ua::DiagnosticInfo::unserialize(SerializationContext& ctx, Serializer& 
 }
 
 opc_ua::ResponseHeader::ResponseHeader()
+	: timestamp(), request_handle(0), service_result(0),
+	service_diagnostics(), string_table(), additional_header()
 {
 }
 
@@ -96,12 +104,9 @@ void opc_ua::ResponseHeader::unserialize(SerializationContext& ctx, Serializer& 
 	s.unserialize(ctx, additional_header);
 }
 
-opc_ua::OpenSecureChannelRequest::OpenSecureChannelRequest()
-{
-}
-
 opc_ua::OpenSecureChannelRequest::OpenSecureChannelRequest(SecurityTokenRequestType req_type, MessageSecurityMode req_mode, ByteString req_nonce, UInt32 req_lifetime)
-	: request_type(req_type),
+	: client_protocol_version(0),
+	request_type(req_type),
 	security_mode(req_mode),
 	client_nonce(req_nonce),
 	requested_lifetime(req_lifetime)
@@ -134,6 +139,7 @@ void opc_ua::OpenSecureChannelRequest::unserialize(SerializationContext& ctx, Se
 }
 
 opc_ua::ChannelSecurityToken::ChannelSecurityToken()
+	: channel_id(0), token_id(0), created_at(), revised_lifetime(0)
 {
 }
 
@@ -154,6 +160,7 @@ void opc_ua::ChannelSecurityToken::unserialize(SerializationContext& ctx, Serial
 }
 
 opc_ua::OpenSecureChannelResponse::OpenSecureChannelResponse()
+	: server_protocol_version(0), security_token(), server_nonce("")
 {
 }
 
@@ -201,10 +208,6 @@ void opc_ua::CloseSecureChannelResponse::unserialize(SerializationContext& ctx, 
 	s.unserialize(ctx, response_header);
 }
 
-opc_ua::ApplicationDescription::ApplicationDescription()
-{
-}
-
 opc_ua::ApplicationDescription::ApplicationDescription(ApplicationType app_type)
 	: application_uri(), product_uri(),
 	application_name(), application_type(app_type),
@@ -237,10 +240,6 @@ void opc_ua::ApplicationDescription::unserialize(SerializationContext& ctx, Seri
 	s.unserialize(ctx, ArrayUnserialization<String>(discovery_urls));
 
 	application_type = static_cast<ApplicationType>(app_type);
-}
-
-opc_ua::CreateSessionRequest::CreateSessionRequest()
-{
 }
 
 opc_ua::CreateSessionRequest::CreateSessionRequest(ApplicationType app_type, String endpoint, String session, String nonce, Double session_timeout)
@@ -312,7 +311,7 @@ void opc_ua::UserTokenPolicy::unserialize(SerializationContext& ctx, Serializer&
 opc_ua::EndpointDescription::EndpointDescription()
 	: endpoint_url(), server(), server_certificate(),
 	security_mode(), security_policy_uri(), user_identity_tokens(),
-	transport_profile_uri(), security_level()
+	transport_profile_uri(), security_level(0)
 {
 }
 
@@ -345,6 +344,7 @@ void opc_ua::EndpointDescription::unserialize(SerializationContext& ctx, Seriali
 }
 
 opc_ua::SignedSoftwareCertificate::SignedSoftwareCertificate()
+	: certificate_data(), signature()
 {
 }
 
@@ -378,6 +378,10 @@ void opc_ua::SignatureData::unserialize(SerializationContext& ctx, Serializer& s
 }
 
 opc_ua::CreateSessionResponse::CreateSessionResponse()
+	: session_id(), authentication_token(), revised_session_timeout(0),
+	server_nonce(), server_certificate(), server_endpoints(),
+	server_software_certificates(), server_signature(),
+	max_request_message_size(0x1000000)
 {
 }
 
@@ -409,8 +413,51 @@ void opc_ua::CreateSessionResponse::unserialize(SerializationContext& ctx, Seria
 	s.unserialize(ctx, max_request_message_size);
 }
 
-opc_ua::CloseSessionRequest::CloseSessionRequest()
+opc_ua::ActivateSessionRequest::ActivateSessionRequest()
+	: client_signature(), client_software_certificates(), locale_ids(),
+	user_identity_token(), user_token_signature()
 {
+}
+
+void opc_ua::ActivateSessionRequest::serialize(SerializationContext& ctx, Serializer& s) const
+{
+	s.serialize(ctx, request_header);
+	s.serialize(ctx, client_signature);
+	s.serialize(ctx, ArraySerialization<SignedSoftwareCertificate>(client_software_certificates));
+	s.serialize(ctx, ArraySerialization<String>(locale_ids));
+	s.serialize(ctx, user_identity_token);
+	s.serialize(ctx, user_token_signature);
+}
+
+void opc_ua::ActivateSessionRequest::unserialize(SerializationContext& ctx, Serializer& s)
+{
+	s.unserialize(ctx, request_header);
+	s.unserialize(ctx, client_signature);
+	s.unserialize(ctx, ArrayUnserialization<SignedSoftwareCertificate>(client_software_certificates));
+	s.unserialize(ctx, ArrayUnserialization<String>(locale_ids));
+	s.unserialize(ctx, user_identity_token);
+	s.unserialize(ctx, user_token_signature);
+}
+
+opc_ua::ActivateSessionResponse::ActivateSessionResponse()
+	: server_nonce(), results(), diagnostic_infos()
+{
+}
+
+void opc_ua::ActivateSessionResponse::serialize(SerializationContext& ctx, Serializer& s) const
+{
+	s.serialize(ctx, response_header);
+	s.serialize(ctx, server_nonce);
+	s.serialize(ctx, ArraySerialization<StatusCode>(results));
+	s.serialize(ctx, ArraySerialization<DiagnosticInfo>(diagnostic_infos));
+}
+
+void opc_ua::ActivateSessionResponse::unserialize(SerializationContext& ctx, Serializer& s)
+{
+	s.unserialize(ctx, response_header);
+	s.unserialize(ctx, server_nonce);
+	s.unserialize(ctx, ArrayUnserialization<StatusCode>(results));
+	s.unserialize(ctx, ArrayUnserialization<DiagnosticInfo>(diagnostic_infos));
 }
 
 opc_ua::CloseSessionRequest::CloseSessionRequest(Boolean del_subscriptions)

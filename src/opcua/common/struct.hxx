@@ -30,7 +30,6 @@ namespace opc_ua
 		UInt32 timeout_hint;
 		ExtensionObject additional_header;
 
-		// non-initializing constructor
 		RequestHeader();
 
 		// metadata
@@ -52,7 +51,6 @@ namespace opc_ua
 
 		// TODO: optional fields
 
-		// non-initializing constructor
 		DiagnosticInfo();
 
 		// metadata
@@ -69,7 +67,6 @@ namespace opc_ua
 		Array<String> string_table;
 		ExtensionObject additional_header;
 
-		// non-initializing constructor
 		ResponseHeader();
 
 		// metadata
@@ -106,10 +103,7 @@ namespace opc_ua
 		ByteString client_nonce;
 		UInt32 requested_lifetime;
 
-		// non-initializing constructor
-		OpenSecureChannelRequest();
-		// initializing constructor
-		OpenSecureChannelRequest(SecurityTokenRequestType req_type, MessageSecurityMode req_mode, ByteString req_nonce, UInt32 req_lifetime);
+		OpenSecureChannelRequest(SecurityTokenRequestType req_type = SecurityTokenRequestType::ISSUE, MessageSecurityMode req_mode = MessageSecurityMode::NONE, ByteString req_nonce = "", UInt32 req_lifetime = 0);
 
 		// metadata
 		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
@@ -124,8 +118,8 @@ namespace opc_ua
 		DateTime created_at;
 		UInt32 revised_lifetime;
 
-		// non-initializing constructor
 		ChannelSecurityToken();
+
 		// metadata
 		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
 		virtual void unserialize(SerializationContext& ctx, Serializer& s);
@@ -139,7 +133,6 @@ namespace opc_ua
 		ChannelSecurityToken security_token;
 		ByteString server_nonce;
 
-		// non-initializing constructor
 		OpenSecureChannelResponse();
 		// metadata
 		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
@@ -151,7 +144,6 @@ namespace opc_ua
 	{
 		static constexpr UInt32 NODE_ID = 450;
 
-		// non-initializing constructor
 		CloseSecureChannelRequest();
 
 		// metadata
@@ -164,7 +156,6 @@ namespace opc_ua
 	{
 		static constexpr UInt32 NODE_ID = 453;
 
-		// non-initializing constructor
 		CloseSecureChannelResponse();
 
 		// metadata
@@ -191,10 +182,7 @@ namespace opc_ua
 		String discovery_profile_uri;
 		Array<String> discovery_urls;
 
-		// non-initializing constructor
-		ApplicationDescription();
-		// initializing constructor
-		ApplicationDescription(ApplicationType app_type);
+		ApplicationDescription(ApplicationType app_type = ApplicationType::SERVER);
 
 		// metadata
 		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
@@ -214,10 +202,7 @@ namespace opc_ua
 		Double requested_session_timeout;
 		UInt32 max_response_message_size;
 
-		// non-initializing constructor
-		CreateSessionRequest();
-		// initializing constructor
-		CreateSessionRequest(ApplicationType app_type, String endpoint, String session, String nonce, Double session_timeout);
+		CreateSessionRequest(ApplicationType app_type = ApplicationType::SERVER, String endpoint = "", String session = "", String nonce = "", Double session_timeout = 0);
 
 		// metadata
 		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
@@ -241,7 +226,6 @@ namespace opc_ua
 		String issuer_endpoint_url;
 		String security_policy_uri;
 
-		// non-initializing constructor
 		UserTokenPolicy();
 
 		// metadata
@@ -260,7 +244,6 @@ namespace opc_ua
 		String transport_profile_uri;
 		Byte security_level;
 
-		// non-initializing constructor
 		EndpointDescription();
 
 		// metadata
@@ -273,7 +256,6 @@ namespace opc_ua
 		ByteString certificate_data;
 		ByteString signature;
 
-		// non-initializing constructor
 		SignedSoftwareCertificate();
 
 		// metadata
@@ -286,7 +268,6 @@ namespace opc_ua
 		String algorithm;
 		ByteString signature;
 
-		// non-initializing constructor
 		SignatureData();
 
 		// metadata
@@ -308,8 +289,41 @@ namespace opc_ua
 		SignatureData server_signature;
 		UInt32 max_request_message_size;
 
-		// non-initializing constructor
 		CreateSessionResponse();
+
+		// metadata
+		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
+		virtual void unserialize(SerializationContext& ctx, Serializer& s);
+		virtual UInt32 node_id() const { return NODE_ID; }
+	};
+
+	struct ActivateSessionRequest : Request
+	{
+		static constexpr UInt32 NODE_ID = 465;
+
+		SignatureData client_signature;
+		Array<SignedSoftwareCertificate> client_software_certificates;
+		Array<String> locale_ids;
+		ExtensionObject user_identity_token;
+		SignatureData user_token_signature;
+
+		ActivateSessionRequest();
+
+		// metadata
+		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
+		virtual void unserialize(SerializationContext& ctx, Serializer& s);
+		virtual UInt32 node_id() const { return NODE_ID; }
+	};
+
+	struct ActivateSessionResponse : Response
+	{
+		static constexpr UInt32 NODE_ID = 468;
+
+		ByteString server_nonce;
+		Array<StatusCode> results;
+		Array<DiagnosticInfo> diagnostic_infos;
+
+		ActivateSessionResponse();
 
 		// metadata
 		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
@@ -323,10 +337,7 @@ namespace opc_ua
 
 		Boolean delete_subscriptions;
 
-		// non-initializing constructor
-		CloseSessionRequest();
-		// initializing constructor
-		CloseSessionRequest(Boolean del_subscriptions);
+		CloseSessionRequest(Boolean del_subscriptions = false);
 
 		// metadata
 		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
@@ -338,7 +349,6 @@ namespace opc_ua
 	{
 		static constexpr UInt32 NODE_ID = 474;
 
-		// non-initializing constructor
 		CloseSessionResponse();
 
 		// metadata

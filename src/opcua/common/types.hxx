@@ -34,9 +34,7 @@ namespace opc_ua
 	{
 		struct timespec ts;
 
-		// non-initializing constructor
 		DateTime();
-		// construct from struct timespec
 		DateTime(struct timespec new_ts);
 
 		// get current time with max available precision
@@ -73,10 +71,8 @@ namespace opc_ua
 		};
 		ByteString as_bytestring;
 
-		// non-initializing constructor
-		NodeId();
-		// numeric NodeId
-		NodeId(UInt32 node_id, UInt16 node_ns = 0);
+		// Numeric NodeId
+		NodeId(UInt32 node_id = 0, UInt16 node_ns = 0);
 		// GUID NodeId
 		NodeId(const GUID& node_id, UInt16 node_ns);
 		// ByteString NodeId

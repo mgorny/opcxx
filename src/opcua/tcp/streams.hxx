@@ -114,6 +114,10 @@ namespace opc_ua
 
 			bool session_established;
 
+			// session info
+			NodeId session_id;
+			NodeId authentication_token;
+
 		public:
 			SessionStream(const std::string& sess_name);
 
