@@ -149,6 +149,13 @@ void opc_ua::tcp::BinarySerializer::serialize(SerializationContext& ctx, const N
 			serialize(ctx, n.as_guid);
 			break;
 		}
+		case NodeIdType::STRING:
+		{
+			serialize(ctx, static_cast<Byte>(BinaryNodeIdType::STRING));
+			serialize(ctx, n.ns);
+			serialize(ctx, n.as_chararray);
+			break;
+		}
 		case NodeIdType::BYTE_STRING:
 		{
 			serialize(ctx, static_cast<Byte>(BinaryNodeIdType::BYTE_STRING));
@@ -171,6 +178,11 @@ void opc_ua::tcp::BinarySerializer::serialize(SerializationContext& ctx, const E
 	// Note: extension objects are not supported now.
 	serialize(ctx, NodeId(0));
 	serialize(ctx, Byte(0));
+}
+
+void opc_ua::tcp::BinarySerializer::serialize(SerializationContext& ctx, const Variant& v)
+{
+	throw std::runtime_error("Not implemented yet");
 }
 
 void opc_ua::tcp::BinarySerializer::serialize(SerializationContext& ctx, MessageType t)
@@ -405,13 +417,22 @@ void opc_ua::tcp::BinarySerializer::unserialize(SerializationContext& ctx, NodeI
 			n = NodeId(guid, ns);
 			break;
 		}
+		case BinaryNodeIdType::STRING:
+		{
+			UInt16 ns;
+			CharArray id;
+			unserialize(ctx, ns);
+			unserialize(ctx, id);
+			n = NodeId(id, ns);
+			break;
+		}
 		case BinaryNodeIdType::BYTE_STRING:
 		{
 			UInt16 ns;
 			ByteString id;
 			unserialize(ctx, ns);
 			unserialize(ctx, id);
-			n = NodeId(id, ns);
+			n = NodeId(id, ns, 0);
 			break;
 		}
 		default:
@@ -436,6 +457,11 @@ void opc_ua::tcp::BinarySerializer::unserialize(SerializationContext& ctx, Exten
 	if (id.type != NodeIdType::NUMERIC || id.ns != 0 || id.as_int != 0
 			|| encoding != 0)
 		throw std::runtime_error("ExtensionObjects are not supported at the moment");
+}
+
+void opc_ua::tcp::BinarySerializer::unserialize(SerializationContext& ctx, Variant& v)
+{
+	throw std::runtime_error("Not implemented yet");
 }
 
 void opc_ua::tcp::BinarySerializer::unserialize(SerializationContext& ctx, MessageIsFinal& b)

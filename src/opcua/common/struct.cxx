@@ -32,6 +32,9 @@ const opc_ua::MessageConstructorMap opc_ua::message_constructors{
 	M<ActivateSessionResponse>(),
 	M<CloseSessionRequest>(),
 	M<CloseSessionResponse>(),
+	M<TranslateBrowsePathsToNodeIdsRequest>(),
+	M<ReadRequest>(),
+	M<ReadResponse>(),
 };
 
 opc_ua::RequestHeader::RequestHeader()
@@ -490,3 +493,183 @@ void opc_ua::CloseSessionResponse::unserialize(SerializationContext& ctx, Serial
 {
 	s.unserialize(ctx, response_header);
 }
+
+opc_ua::QualifiedName::QualifiedName(Int32 ns_index, CharArray new_name)
+	: namespace_index(ns_index), name(new_name)
+{
+}
+
+void opc_ua::QualifiedName::serialize(SerializationContext& ctx, Serializer& s) const
+{
+	s.serialize(ctx, namespace_index);
+	s.serialize(ctx, name);
+}
+
+void opc_ua::QualifiedName::unserialize(SerializationContext& ctx, Serializer& s)
+{
+	s.unserialize(ctx, namespace_index);
+	s.unserialize(ctx, name);
+}
+
+opc_ua::RelativePathElement::RelativePathElement(NodeId ref_type, Boolean is_inv, Boolean inc_subtypes, QualifiedName target)
+	: reference_type_id(ref_type), is_inverse(is_inv), include_subtypes(inc_subtypes), target_name(target)
+{
+}
+
+void opc_ua::RelativePathElement::serialize(SerializationContext& ctx, Serializer& s) const
+{
+	s.serialize(ctx, reference_type_id);
+	s.serialize(ctx, is_inverse);
+	s.serialize(ctx, include_subtypes);
+	s.serialize(ctx, target_name);
+}
+
+void opc_ua::RelativePathElement::unserialize(SerializationContext& ctx, Serializer& s)
+{
+	s.unserialize(ctx, reference_type_id);
+	s.unserialize(ctx, is_inverse);
+	s.unserialize(ctx, include_subtypes);
+	s.unserialize(ctx, target_name);
+}
+
+opc_ua::RelativePath::RelativePath(Array<RelativePathElement> new_elements)
+	: elements(new_elements)
+{
+}
+
+void opc_ua::RelativePath::serialize(SerializationContext& ctx, Serializer& s) const
+{
+	s.serialize(ctx, ArraySerialization<RelativePathElement>(elements));
+}
+
+void opc_ua::RelativePath::unserialize(SerializationContext& ctx, Serializer& s)
+{
+	s.unserialize(ctx, ArrayUnserialization<RelativePathElement>(elements));
+}
+
+opc_ua::BrowsePath::BrowsePath(NodeId start, RelativePath path)
+	: starting_node(start), relative_path(path)
+{
+}
+
+void opc_ua::BrowsePath::serialize(SerializationContext& ctx, Serializer& s) const
+{
+	s.serialize(ctx, starting_node);
+	s.serialize(ctx, relative_path);
+}
+
+void opc_ua::BrowsePath::unserialize(SerializationContext& ctx, Serializer& s)
+{
+	s.unserialize(ctx, starting_node);
+	s.unserialize(ctx, relative_path);
+}
+
+opc_ua::TranslateBrowsePathsToNodeIdsRequest::TranslateBrowsePathsToNodeIdsRequest(Array<BrowsePath> paths)
+	: browse_paths(paths)
+{
+}
+
+void opc_ua::TranslateBrowsePathsToNodeIdsRequest::serialize(SerializationContext& ctx, Serializer& s) const
+{
+	s.serialize(ctx, request_header);
+	s.serialize(ctx, ArraySerialization<BrowsePath>(browse_paths));
+}
+
+void opc_ua::TranslateBrowsePathsToNodeIdsRequest::unserialize(SerializationContext& ctx, Serializer& s)
+{
+	s.unserialize(ctx, request_header);
+	s.unserialize(ctx, ArrayUnserialization<BrowsePath>(browse_paths));
+}
+
+opc_ua::ReadValueId::ReadValueId()
+	: node_id(), attribute_id(0), index_range(), data_encoding()
+{
+}
+
+void opc_ua::ReadValueId::serialize(SerializationContext& ctx, Serializer& s) const
+{
+	s.serialize(ctx, node_id);
+	s.serialize(ctx, attribute_id);
+	s.serialize(ctx, index_range);
+	s.serialize(ctx, data_encoding);
+}
+
+void opc_ua::ReadValueId::unserialize(SerializationContext& ctx, Serializer& s)
+{
+	s.unserialize(ctx, node_id);
+	s.unserialize(ctx, attribute_id);
+	s.unserialize(ctx, index_range);
+	s.unserialize(ctx, data_encoding);
+}
+
+opc_ua::ReadRequest::ReadRequest()
+	: max_age(0), timestamps_to_return(TimestampsToReturn::SOURCE), nodes_to_read()
+{
+}
+
+void opc_ua::ReadRequest::serialize(SerializationContext& ctx, Serializer& s) const
+{
+	s.serialize(ctx, request_header);
+	s.serialize(ctx, max_age);
+	s.serialize(ctx, static_cast<UInt32>(timestamps_to_return));
+	s.serialize(ctx, ArraySerialization<ReadValueId>(nodes_to_read));
+}
+
+void opc_ua::ReadRequest::unserialize(SerializationContext& ctx, Serializer& s)
+{
+	UInt32 timestamps_to_return_i;
+
+	s.unserialize(ctx, request_header);
+	s.unserialize(ctx, max_age);
+	s.unserialize(ctx, timestamps_to_return_i);
+	s.unserialize(ctx, ArrayUnserialization<ReadValueId>(nodes_to_read));
+
+	timestamps_to_return = static_cast<TimestampsToReturn>(timestamps_to_return_i);
+}
+
+opc_ua::DataValue::DataValue()
+	: flags(0), value(), status_code(0), source_timestamp(), source_picoseconds(0), server_timestamp(), server_picoseconds(0)
+{
+}
+
+void opc_ua::DataValue::serialize(SerializationContext& ctx, Serializer& s) const
+{
+	s.serialize(ctx, flags);
+	s.serialize(ctx, value);
+	s.serialize(ctx, status_code);
+	s.serialize(ctx, source_timestamp);
+	s.serialize(ctx, source_picoseconds);
+	s.serialize(ctx, server_timestamp);
+	s.serialize(ctx, server_picoseconds);
+}
+
+void opc_ua::DataValue::unserialize(SerializationContext& ctx, Serializer& s)
+{
+	s.unserialize(ctx, flags);
+	s.unserialize(ctx, value);
+	s.unserialize(ctx, status_code);
+	s.unserialize(ctx, source_timestamp);
+	s.unserialize(ctx, source_picoseconds);
+	s.unserialize(ctx, server_timestamp);
+	s.unserialize(ctx, server_picoseconds);
+}
+
+opc_ua::ReadResponse::ReadResponse()
+	: results(), diagnostic_infos()
+{
+}
+
+void opc_ua::ReadResponse::serialize(SerializationContext& ctx, Serializer& s) const
+{
+	s.serialize(ctx, response_header);
+	s.serialize(ctx, ArraySerialization<DataValue>(results));
+	s.serialize(ctx, ArraySerialization<DiagnosticInfo>(diagnostic_infos));
+}
+
+void opc_ua::ReadResponse::unserialize(SerializationContext& ctx, Serializer& s)
+{
+	s.unserialize(ctx, response_header);
+	s.unserialize(ctx, ArrayUnserialization<DataValue>(results));
+	s.unserialize(ctx, ArrayUnserialization<DiagnosticInfo>(diagnostic_infos));
+}
+

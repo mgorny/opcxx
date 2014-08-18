@@ -371,10 +371,51 @@ void opc_ua::tcp::MessageStream::attach_session(SessionStream& s)
 		s.open_session();
 }
 
+void opc_ua::tcp::SessionStream::handle_create_session(std::unique_ptr<Response> msg, void* data)
+{
+	SessionStream* self = static_cast<SessionStream*>(data);
+	CreateSessionResponse* resp = dynamic_cast<CreateSessionResponse*>(msg.get());
+
+	self->session_id = resp->session_id;
+	self->authentication_token = resp->authentication_token;
+
+	opc_ua::ActivateSessionRequest asr;
+	self->write_message(asr, self->handle_activate_session, data);
+}
+
+void opc_ua::tcp::SessionStream::handle_activate_session(std::unique_ptr<Response> msg, void* data)
+{
+	SessionStream* self = static_cast<SessionStream*>(data);
+	ActivateSessionResponse* resp = dynamic_cast<ActivateSessionResponse*>(msg.get());
+
+	self->session_established = true;
+	return;
+
+	ReadRequest rvr;
+	rvr.max_age = 100000;
+	rvr.nodes_to_read.emplace_back();
+	rvr.nodes_to_read[0].node_id = NodeId("sampleBuilding", 2);
+	rvr.nodes_to_read[0].attribute_id = 3;
+	self->write_message(rvr, [] (std::unique_ptr<Response> msg, void* data) {}, data);
+
+	//ns=2;'sampleBuilding'
+}
+
 opc_ua::tcp::SessionStream::SessionStream(const std::string& sess_name)
 	: secure_channel(nullptr), session_name(sess_name),
 	session_established(false)
 {
+}
+
+void opc_ua::tcp::SessionStream::write_message(Request& msg, request_callback_type callback, void* cb_data)
+{
+	msg.request_header.authentication_token = authentication_token;
+
+	secure_channel->write_message(msg);
+	callbacks[msg.request_header.request_handle] = {
+		.callback = callback,
+		.data = cb_data
+	};
 }
 
 void opc_ua::tcp::SessionStream::attach(MessageStream& ms, const std::string& endpoint)
@@ -393,13 +434,17 @@ void opc_ua::tcp::SessionStream::open_session()
 		random_nonce(),
 		1E9);
 
-	secure_channel->write_message(csr);
+	write_message(csr, handle_create_session, this);
 }
 
 void opc_ua::tcp::SessionStream::on_message(std::unique_ptr<Response> msg)
 {
-	if (msg->node_id() == CreateSessionResponse::NODE_ID)
-	{
-		session_established = true;
-	}
+	auto it = callbacks.find(msg->response_header.request_handle);
+
+	if (it == callbacks.end())
+		throw std::runtime_error("Got a response to unknown request");
+
+	it->second.callback(std::move(msg), it->second.data);
+
+	callbacks.erase(it);
 }

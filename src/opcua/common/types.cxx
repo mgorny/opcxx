@@ -39,7 +39,12 @@ opc_ua::NodeId::NodeId(const GUID& node_id, UInt16 node_ns)
 {
 }
 
-opc_ua::NodeId::NodeId(const ByteString& node_id, UInt16 node_ns)
+opc_ua::NodeId::NodeId(const CharArray& node_id, UInt16 node_ns)
+	: type(NodeIdType::STRING), ns(node_ns), as_chararray(node_id)
+{
+}
+
+opc_ua::NodeId::NodeId(const ByteString& node_id, UInt16 node_ns, int unused)
 	: type(NodeIdType::BYTE_STRING), ns(node_ns), as_bytestring(node_id)
 {
 }

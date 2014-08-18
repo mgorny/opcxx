@@ -22,6 +22,9 @@ const opc_ua::tcp::NodeIdMappingType opc_ua::tcp::id_mapping{
 	{ActivateSessionResponse::NODE_ID, 470},
 	{CloseSessionRequest::NODE_ID, 473},
 	{CloseSessionResponse::NODE_ID, 476},
+	{TranslateBrowsePathsToNodeIdsRequest::NODE_ID, 554},
+	{ReadRequest::NODE_ID, 631},
+	{ReadResponse::NODE_ID, 634},
 };
 
 class reverse_map_iterator : public opc_ua::tcp::NodeIdMappingType::const_iterator

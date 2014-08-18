@@ -154,6 +154,7 @@ namespace opc_ua
 			virtual void serialize(SerializationContext& ctx, const NodeId& n);
 			virtual void serialize(SerializationContext& ctx, const Struct& s);
 			virtual void serialize(SerializationContext& ctx, const ExtensionObject& s);
+			virtual void serialize(SerializationContext& ctx, const Variant& v);
 			virtual void serialize(SerializationContext& ctx, const AbstractArraySerialization& a);
 
 			virtual void unserialize(SerializationContext& ctx, Boolean& b);
@@ -170,6 +171,7 @@ namespace opc_ua
 			virtual void unserialize(SerializationContext& ctx, NodeId& n);
 			virtual void unserialize(SerializationContext& ctx, Struct& s);
 			virtual void unserialize(SerializationContext& ctx, ExtensionObject& s);
+			virtual void unserialize(SerializationContext& ctx, Variant& v);
 			virtual void unserialize(SerializationContext& ctx, const AbstractArrayUnserialization& a);
 
 			// UA TCP specific types

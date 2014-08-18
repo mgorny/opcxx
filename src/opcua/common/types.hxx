@@ -29,6 +29,7 @@ namespace opc_ua
 	// TODO: support NULL value
 	typedef std::string String;
 	typedef std::string ByteString;
+	typedef std::string CharArray;
 
 	struct DateTime
 	{
@@ -43,14 +44,15 @@ namespace opc_ua
 
 	struct LocalizedText
 	{
-		String locale;
-		String text;
+		CharArray locale;
+		CharArray text;
 	};
 
 	enum class NodeIdType
 	{
 		NUMERIC,
 		GUID,
+		STRING,
 		BYTE_STRING,
 	};
 
@@ -70,13 +72,20 @@ namespace opc_ua
 			GUID as_guid;
 		};
 		ByteString as_bytestring;
+		CharArray as_chararray;
 
 		// Numeric NodeId
 		NodeId(UInt32 node_id = 0, UInt16 node_ns = 0);
 		// GUID NodeId
 		NodeId(const GUID& node_id, UInt16 node_ns);
+		// String NodeId
+		NodeId(const CharArray& node_id, UInt16 node_ns);
 		// ByteString NodeId
-		NodeId(const ByteString& node_id, UInt16 node_ns);
+		NodeId(const ByteString& node_id, UInt16 node_ns, int unused);
+	};
+
+	enum class VariantType
+	{
 	};
 
 	struct Serializer;
@@ -102,6 +111,11 @@ namespace opc_ua
 
 	template <class T>
 	using Array = std::vector<T>;
+
+	struct Variant
+	{
+		VariantType variant_type;
+	};
 
 	class AbstractArraySerialization
 	{
@@ -156,6 +170,7 @@ namespace opc_ua
 		virtual void serialize(SerializationContext& ctx, const NodeId& n) = 0;
 		virtual void serialize(SerializationContext& ctx, const Struct& s) = 0;
 		virtual void serialize(SerializationContext& ctx, const ExtensionObject& s) = 0;
+		virtual void serialize(SerializationContext& ctx, const Variant& v) = 0;
 		virtual void serialize(SerializationContext& ctx, const AbstractArraySerialization& a) = 0;
 
 		virtual void unserialize(SerializationContext& ctx, Boolean& b) = 0;
@@ -172,6 +187,7 @@ namespace opc_ua
 		virtual void unserialize(SerializationContext& ctx, NodeId& n) = 0;
 		virtual void unserialize(SerializationContext& ctx, Struct& s) = 0;
 		virtual void unserialize(SerializationContext& ctx, ExtensionObject& s) = 0;
+		virtual void unserialize(SerializationContext& ctx, Variant& v) = 0;
 		virtual void unserialize(SerializationContext& ctx, const AbstractArrayUnserialization& a) = 0;
 	};
 

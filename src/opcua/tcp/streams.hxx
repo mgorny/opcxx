@@ -16,6 +16,7 @@
 #include <opcua/common/util.hxx>
 #include <opcua/tcp/types.hxx>
 
+#include <functional>
 #include <memory>
 #include <unordered_map>
 #include <vector>
@@ -86,6 +87,8 @@ namespace opc_ua
 			MessageStream(TransportStream& new_ts);
 			~MessageStream();
 
+			// fill in the request header and send the message through
+			// the associated secure channel.
 			void write_message(Request& msg, MessageType msg_type = MessageType::MSG);
 
 			// write secure channel request
@@ -106,6 +109,11 @@ namespace opc_ua
 		// reattaching to a different TransportStream and resuming session.
 		class SessionStream
 		{
+		public:
+			typedef std::function<void(std::unique_ptr<Response>, void*)>
+				request_callback_type;
+
+		private:
 			MessageStream* secure_channel;
 
 			std::string session_name;
@@ -118,8 +126,23 @@ namespace opc_ua
 			NodeId session_id;
 			NodeId authentication_token;
 
+			// request map
+			struct callback_data
+			{
+				request_callback_type callback;
+				void* data;
+			};
+			std::unordered_map<UInt32, callback_data> callbacks;
+
+			// internal callbacks
+			static void handle_create_session(std::unique_ptr<Response> msg, void* data);
+			static void handle_activate_session(std::unique_ptr<Response> msg, void* data);
+
 		public:
 			SessionStream(const std::string& sess_name);
+
+			// Send request and register the callback for response.
+			void write_message(Request& msg, request_callback_type callback, void* cb_data);
 
 			// Attach to a secure channel.
 			void attach(MessageStream& ms, const std::string& endpoint);

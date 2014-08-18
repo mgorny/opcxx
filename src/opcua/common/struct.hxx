@@ -356,6 +356,139 @@ namespace opc_ua
 		virtual void unserialize(SerializationContext& ctx, Serializer& s);
 		virtual UInt32 node_id() const { return NODE_ID; }
 	};
+
+	struct QualifiedName : Struct
+	{
+		Int32 namespace_index;
+		CharArray name;
+
+		QualifiedName(Int32 ns_index = 0, CharArray new_name = "");
+
+		// metadata
+		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
+		virtual void unserialize(SerializationContext& ctx, Serializer& s);
+	};
+
+	struct RelativePathElement : Struct
+	{
+		NodeId reference_type_id;
+		Boolean is_inverse;
+		Boolean include_subtypes;
+		QualifiedName target_name;
+
+		RelativePathElement(NodeId ref_type = 0, Boolean is_inv = false, Boolean inc_subtypes = false, QualifiedName target = {});
+
+		// metadata
+		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
+		virtual void unserialize(SerializationContext& ctx, Serializer& s);
+	};
+
+	struct RelativePath : Struct
+	{
+		Array<RelativePathElement> elements;
+
+		RelativePath(Array<RelativePathElement> new_elements = {});
+
+		// metadata
+		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
+		virtual void unserialize(SerializationContext& ctx, Serializer& s);
+	};
+
+	struct BrowsePath : Struct
+	{
+		NodeId starting_node;
+		RelativePath relative_path;
+
+		BrowsePath(NodeId start = 0, RelativePath path = {});
+
+		// metadata
+		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
+		virtual void unserialize(SerializationContext& ctx, Serializer& s);
+	};
+
+	struct TranslateBrowsePathsToNodeIdsRequest : Request
+	{
+		static constexpr UInt32 NODE_ID = 552;
+
+		Array<BrowsePath> browse_paths;
+
+		TranslateBrowsePathsToNodeIdsRequest(Array<BrowsePath> paths = {});
+
+		// metadata
+		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
+		virtual void unserialize(SerializationContext& ctx, Serializer& s);
+		virtual UInt32 node_id() const { return NODE_ID; }
+	};
+
+	enum class TimestampsToReturn
+	{
+		SOURCE = 0,
+		SERVER = 1,
+		BOTH = 2,
+		NEITHER = 3,
+	};
+
+	struct ReadValueId : Struct
+	{
+		NodeId node_id;
+		UInt32 attribute_id;
+		String index_range;
+		QualifiedName data_encoding;
+
+		ReadValueId();
+
+		// metadata
+		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
+		virtual void unserialize(SerializationContext& ctx, Serializer& s);
+	};
+
+	struct ReadRequest : Request
+	{
+		static constexpr UInt32 NODE_ID = 629;
+
+		Double max_age;
+		TimestampsToReturn timestamps_to_return;
+		Array<ReadValueId> nodes_to_read;
+
+		ReadRequest();
+
+		// metadata
+		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
+		virtual void unserialize(SerializationContext& ctx, Serializer& s);
+		virtual UInt32 node_id() const { return NODE_ID; }
+	};
+
+	struct DataValue : Struct
+	{
+		Byte flags;
+		Variant value;
+		StatusCode status_code;
+		DateTime source_timestamp;
+		UInt16 source_picoseconds;
+		DateTime server_timestamp;
+		UInt16 server_picoseconds;
+
+		DataValue();
+
+		// metadata
+		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
+		virtual void unserialize(SerializationContext& ctx, Serializer& s);
+	};
+
+	struct ReadResponse : Response
+	{
+		static constexpr UInt32 NODE_ID = 632;
+
+		Array<DataValue> results;
+		Array<DiagnosticInfo> diagnostic_infos;
+
+		ReadResponse();
+
+		// metadata
+		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
+		virtual void unserialize(SerializationContext& ctx, Serializer& s);
+		virtual UInt32 node_id() const { return NODE_ID; }
+	};
 };
 
 #endif /*OPCUA_COMMON_STRUCT_HXX*/
