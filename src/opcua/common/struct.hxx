@@ -16,9 +16,9 @@
 namespace opc_ua
 {
 	// std::function<> triggers undefined symbols for NODE_ID
-	typedef Message* (*MessageConstructorType)();
-	typedef std::unordered_map<UInt32, MessageConstructorType> MessageConstructorMap;
-	extern const MessageConstructorMap message_constructors;
+	typedef Struct* (*StructConstructorType)();
+	typedef std::unordered_map<UInt32, StructConstructorType> StructConstructorMap;
+	extern const StructConstructorMap struct_constructors;
 
 	struct RequestHeader : Struct
 	{
@@ -549,9 +549,13 @@ namespace opc_ua
 		virtual UInt32 get_node_id() const { return NODE_ID; }
 	};
 
-	struct AnonymousUserIdentityToken : UserIdentityToken
+	struct AnonymousIdentityToken : UserIdentityToken
 	{
-		AnonymousUserIdentityToken();
+		static constexpr UInt32 NODE_ID = 319;
+
+		AnonymousIdentityToken();
+
+		virtual UInt32 get_node_id() const { return NODE_ID; }
 	};
 };
 

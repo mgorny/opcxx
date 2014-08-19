@@ -10,31 +10,48 @@
 #include "struct.hxx"
 
 template <class T>
-constexpr opc_ua::Message* message_constructor()
+constexpr opc_ua::Struct* struct_constructor()
 {
 	return new T;
 }
 
 template <class T>
-constexpr opc_ua::MessageConstructorMap::value_type M()
+constexpr opc_ua::StructConstructorMap::value_type M()
 {
-	return {T::NODE_ID, message_constructor<T>};
+	return {T::NODE_ID, struct_constructor<T>};
 }
 
-const opc_ua::MessageConstructorMap opc_ua::message_constructors{
-	M<OpenSecureChannelRequest>(),
-	M<OpenSecureChannelResponse>(),
-	M<CloseSecureChannelRequest>(),
-	M<CloseSecureChannelResponse>(),
-	M<CreateSessionRequest>(),
-	M<CreateSessionResponse>(),
+const opc_ua::StructConstructorMap opc_ua::struct_constructors{
 	M<ActivateSessionRequest>(),
 	M<ActivateSessionResponse>(),
+	M<AnonymousIdentityToken>(),
+	M<ApplicationDescription>(),
+	M<BrowsePath>(),
+	M<ChannelSecurityToken>(),
+	M<CloseSecureChannelRequest>(),
+	M<CloseSecureChannelResponse>(),
 	M<CloseSessionRequest>(),
 	M<CloseSessionResponse>(),
-	M<TranslateBrowsePathsToNodeIdsRequest>(),
+	M<CreateSessionRequest>(),
+	M<CreateSessionResponse>(),
+	M<DataValue>(),
+	M<DiagnosticInfo>(),
+	M<EndpointDescription>(),
+	M<OpenSecureChannelRequest>(),
+	M<OpenSecureChannelResponse>(),
+	M<QualifiedName>(),
 	M<ReadRequest>(),
 	M<ReadResponse>(),
+	M<ReadValueId>(),
+	M<RelativePath>(),
+	M<RelativePathElement>(),
+	M<RequestHeader>(),
+	M<ResponseHeader>(),
+	M<SignatureData>(),
+	M<SignedSoftwareCertificate>(),
+	M<TranslateBrowsePathsToNodeIdsRequest>(),
+	M<UserIdentityToken>(),
+	M<UserTokenPolicy>(),
 };
 
 opc_ua::RequestHeader::RequestHeader()
@@ -688,7 +705,7 @@ void opc_ua::UserIdentityToken::unserialize(SerializationContext& ctx, Serialize
 	s.unserialize(ctx, policy_id);
 }
 
-opc_ua::AnonymousUserIdentityToken::AnonymousUserIdentityToken()
+opc_ua::AnonymousIdentityToken::AnonymousIdentityToken()
 	: UserIdentityToken("anonPolicy")
 {
 }

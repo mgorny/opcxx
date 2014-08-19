@@ -9,6 +9,8 @@
 
 #include "types.hxx"
 
+#include <opcua/tcp/idmapping.hxx>
+
 #include <cassert>
 #include <cstdlib>
 #include <stdexcept>
@@ -182,9 +184,21 @@ void opc_ua::tcp::BinarySerializer::serialize(SerializationContext& ctx, const E
 	}
 	else
 	{
-		serialize(ctx, s.inner_object.get()->get_node_id());
+		NodeId orig_id(s.inner_object.get()->get_node_id());
+
+		if (orig_id.type != NodeIdType::NUMERIC || orig_id.ns != 0)
+			throw std::runtime_error("Non-standard objects in ExtensionObject not supported");
+
+		NodeId mapped_id(id_mapping.at(orig_id.as_int));
+
+		TemporarySerializationContext lctx;
+		// serialize to buffer to obtain length
+		s.inner_object.get()->serialize(lctx, *this);
+
+		serialize(ctx, mapped_id);
 		serialize(ctx, Byte(1));
-		serialize(ctx, s.inner_object.get());
+		serialize(ctx, static_cast<UInt32>(lctx.size()));
+		ctx.write(lctx);
 	}
 }
 
@@ -462,9 +476,28 @@ void opc_ua::tcp::BinarySerializer::unserialize(SerializationContext& ctx, Exten
 	unserialize(ctx, id);
 	unserialize(ctx, encoding);
 
-	if (id.type != NodeIdType::NUMERIC || id.ns != 0 || id.as_int != 0
-			|| encoding != 0)
-		throw std::runtime_error("ExtensionObjects are not supported at the moment");
+	if (id == NodeId(0))
+		s.inner_object.reset(nullptr);
+	else
+	{
+		if (encoding != 1)
+			throw std::runtime_error("Unsupported encoding of ExtensionObject");
+		if (id.type != NodeIdType::NUMERIC)
+			throw std::runtime_error("Non-numeric NodeIDs are not supported");
+		if (id.ns != 0)
+			throw std::runtime_error("Non-standard namespaces are not supported");
+
+		UInt32 base_id = reverse_id_mapping.at(id.as_int);
+		s.inner_object.reset(struct_constructors.at(base_id)());
+
+		UInt32 length;
+		unserialize(ctx, length);
+
+		TemporarySerializationContext buf;
+		buf.move(ctx, length);
+
+		s.inner_object.get()->unserialize(buf, *this);
+	}
 }
 
 void opc_ua::tcp::BinarySerializer::unserialize(SerializationContext& ctx, Variant& v)

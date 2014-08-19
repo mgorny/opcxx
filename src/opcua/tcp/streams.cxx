@@ -338,7 +338,7 @@ void opc_ua::tcp::MessageStream::handle_message(MessageHeader& h, SerializationC
 		throw std::runtime_error("Non-standard namespace received");
 
 	UInt32 base_id = reverse_id_mapping.at(msg_id.as_int);
-	Message* msg = message_constructors.at(base_id)();
+	Struct* msg = struct_constructors.at(base_id)();
 	msg->unserialize(body, srl);
 
 	// convert to Response
@@ -376,6 +376,9 @@ void opc_ua::tcp::SessionStream::handle_create_session(std::unique_ptr<Response>
 	self->authentication_token = resp->authentication_token;
 
 	opc_ua::ActivateSessionRequest asr;
+	asr.user_identity_token.inner_object.reset(new opc_ua::AnonymousIdentityToken);
+	asr.locale_ids.emplace_back("en");
+
 	self->write_message(asr, self->handle_activate_session, data);
 }
 
