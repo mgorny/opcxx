@@ -175,9 +175,17 @@ void opc_ua::tcp::BinarySerializer::serialize(SerializationContext& ctx, const S
 
 void opc_ua::tcp::BinarySerializer::serialize(SerializationContext& ctx, const ExtensionObject& s)
 {
-	// Note: extension objects are not supported now.
-	serialize(ctx, NodeId(0));
-	serialize(ctx, Byte(0));
+	if (!s.inner_object)
+	{
+		serialize(ctx, NodeId(0));
+		serialize(ctx, Byte(0));
+	}
+	else
+	{
+		serialize(ctx, s.inner_object.get()->get_node_id());
+		serialize(ctx, Byte(1));
+		serialize(ctx, s.inner_object.get());
+	}
 }
 
 void opc_ua::tcp::BinarySerializer::serialize(SerializationContext& ctx, const Variant& v)

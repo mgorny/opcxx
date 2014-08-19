@@ -22,6 +22,8 @@ namespace opc_ua
 
 	struct RequestHeader : Struct
 	{
+		static constexpr UInt32 NODE_ID = 389;
+
 		NodeId authentication_token;
 		DateTime timestamp;
 		UInt32 request_handle;
@@ -35,6 +37,7 @@ namespace opc_ua
 		// metadata
 		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
 		virtual void unserialize(SerializationContext& ctx, Serializer& s);
+		virtual UInt32 get_node_id() const { return NODE_ID; }
 	};
 
 	struct Request : Message
@@ -47,6 +50,8 @@ namespace opc_ua
 
 	struct DiagnosticInfo : Struct
 	{
+		static constexpr UInt32 NODE_ID = 25;
+
 		Byte flags;
 
 		// TODO: optional fields
@@ -56,10 +61,13 @@ namespace opc_ua
 		// metadata
 		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
 		virtual void unserialize(SerializationContext& ctx, Serializer& s);
+		virtual UInt32 get_node_id() const { return NODE_ID; }
 	};
 
 	struct ResponseHeader : Struct
 	{
+		static constexpr UInt32 NODE_ID = 392;
+
 		DateTime timestamp;
 		UInt32 request_handle;
 		StatusCode service_result;
@@ -72,6 +80,7 @@ namespace opc_ua
 		// metadata
 		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
 		virtual void unserialize(SerializationContext& ctx, Serializer& s);
+		virtual UInt32 get_node_id() const { return NODE_ID; }
 	};
 
 	struct Response : Message
@@ -108,11 +117,13 @@ namespace opc_ua
 		// metadata
 		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
 		virtual void unserialize(SerializationContext& ctx, Serializer& s);
-		virtual UInt32 node_id() const { return NODE_ID; }
+		virtual UInt32 get_node_id() const { return NODE_ID; }
 	};
 
 	struct ChannelSecurityToken : Struct
 	{
+		static constexpr UInt32 NODE_ID = 441;
+
 		UInt32 channel_id;
 		UInt32 token_id;
 		DateTime created_at;
@@ -123,6 +134,7 @@ namespace opc_ua
 		// metadata
 		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
 		virtual void unserialize(SerializationContext& ctx, Serializer& s);
+		virtual UInt32 get_node_id() const { return NODE_ID; }
 	};
 
 	struct OpenSecureChannelResponse : Response
@@ -137,7 +149,7 @@ namespace opc_ua
 		// metadata
 		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
 		virtual void unserialize(SerializationContext& ctx, Serializer& s);
-		virtual UInt32 node_id() const { return NODE_ID; }
+		virtual UInt32 get_node_id() const { return NODE_ID; }
 	};
 
 	struct CloseSecureChannelRequest : Request
@@ -149,7 +161,7 @@ namespace opc_ua
 		// metadata
 		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
 		virtual void unserialize(SerializationContext& ctx, Serializer& s);
-		virtual UInt32 node_id() const { return NODE_ID; }
+		virtual UInt32 get_node_id() const { return NODE_ID; }
 	};
 
 	struct CloseSecureChannelResponse : Response
@@ -161,7 +173,7 @@ namespace opc_ua
 		// metadata
 		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
 		virtual void unserialize(SerializationContext& ctx, Serializer& s);
-		virtual UInt32 node_id() const { return NODE_ID; }
+		virtual UInt32 get_node_id() const { return NODE_ID; }
 	};
 
 	enum class ApplicationType
@@ -174,6 +186,8 @@ namespace opc_ua
 
 	struct ApplicationDescription : Struct
 	{
+		static constexpr UInt32 NODE_ID = 308;
+
 		String application_uri;
 		String product_uri;
 		LocalizedText application_name;
@@ -187,6 +201,7 @@ namespace opc_ua
 		// metadata
 		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
 		virtual void unserialize(SerializationContext& ctx, Serializer& s);
+		virtual UInt32 get_node_id() const { return NODE_ID; }
 	};
 
 	struct CreateSessionRequest : Request
@@ -207,7 +222,7 @@ namespace opc_ua
 		// metadata
 		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
 		virtual void unserialize(SerializationContext& ctx, Serializer& s);
-		virtual UInt32 node_id() const { return NODE_ID; }
+		virtual UInt32 get_node_id() const { return NODE_ID; }
 	};
 
 	enum class UserTokenType
@@ -220,6 +235,8 @@ namespace opc_ua
 
 	struct UserTokenPolicy : Struct
 	{
+		static constexpr UInt32 NODE_ID = 304;
+
 		String policy_id;
 		UserTokenType token_type;
 		String issued_token_type;
@@ -231,10 +248,13 @@ namespace opc_ua
 		// metadata
 		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
 		virtual void unserialize(SerializationContext& ctx, Serializer& s);
+		virtual UInt32 get_node_id() const { return NODE_ID; }
 	};
 
 	struct EndpointDescription : Struct
 	{
+		static constexpr UInt32 NODE_ID = 312;
+
 		String endpoint_url;
 		ApplicationDescription server;
 		ByteString server_certificate;
@@ -249,10 +269,13 @@ namespace opc_ua
 		// metadata
 		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
 		virtual void unserialize(SerializationContext& ctx, Serializer& s);
+		virtual UInt32 get_node_id() const { return NODE_ID; }
 	};
 
 	struct SignedSoftwareCertificate : Struct
 	{
+		static constexpr UInt32 NODE_ID = 344;
+
 		ByteString certificate_data;
 		ByteString signature;
 
@@ -261,10 +284,13 @@ namespace opc_ua
 		// metadata
 		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
 		virtual void unserialize(SerializationContext& ctx, Serializer& s);
+		virtual UInt32 get_node_id() const { return NODE_ID; }
 	};
 
 	struct SignatureData : Struct
 	{
+		static constexpr UInt32 NODE_ID = 456;
+
 		String algorithm;
 		ByteString signature;
 
@@ -273,6 +299,7 @@ namespace opc_ua
 		// metadata
 		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
 		virtual void unserialize(SerializationContext& ctx, Serializer& s);
+		virtual UInt32 get_node_id() const { return NODE_ID; }
 	};
 
 	struct CreateSessionResponse : Response
@@ -294,7 +321,7 @@ namespace opc_ua
 		// metadata
 		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
 		virtual void unserialize(SerializationContext& ctx, Serializer& s);
-		virtual UInt32 node_id() const { return NODE_ID; }
+		virtual UInt32 get_node_id() const { return NODE_ID; }
 	};
 
 	struct ActivateSessionRequest : Request
@@ -312,7 +339,7 @@ namespace opc_ua
 		// metadata
 		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
 		virtual void unserialize(SerializationContext& ctx, Serializer& s);
-		virtual UInt32 node_id() const { return NODE_ID; }
+		virtual UInt32 get_node_id() const { return NODE_ID; }
 	};
 
 	struct ActivateSessionResponse : Response
@@ -328,7 +355,7 @@ namespace opc_ua
 		// metadata
 		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
 		virtual void unserialize(SerializationContext& ctx, Serializer& s);
-		virtual UInt32 node_id() const { return NODE_ID; }
+		virtual UInt32 get_node_id() const { return NODE_ID; }
 	};
 
 	struct CloseSessionRequest : Request
@@ -342,7 +369,7 @@ namespace opc_ua
 		// metadata
 		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
 		virtual void unserialize(SerializationContext& ctx, Serializer& s);
-		virtual UInt32 node_id() const { return NODE_ID; }
+		virtual UInt32 get_node_id() const { return NODE_ID; }
 	};
 
 	struct CloseSessionResponse : Response
@@ -354,11 +381,13 @@ namespace opc_ua
 		// metadata
 		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
 		virtual void unserialize(SerializationContext& ctx, Serializer& s);
-		virtual UInt32 node_id() const { return NODE_ID; }
+		virtual UInt32 get_node_id() const { return NODE_ID; }
 	};
 
 	struct QualifiedName : Struct
 	{
+		static constexpr UInt32 NODE_ID = 20;
+
 		Int32 namespace_index;
 		CharArray name;
 
@@ -367,10 +396,13 @@ namespace opc_ua
 		// metadata
 		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
 		virtual void unserialize(SerializationContext& ctx, Serializer& s);
+		virtual UInt32 get_node_id() const { return NODE_ID; }
 	};
 
 	struct RelativePathElement : Struct
 	{
+		static constexpr UInt32 NODE_ID = 537;
+
 		NodeId reference_type_id;
 		Boolean is_inverse;
 		Boolean include_subtypes;
@@ -381,10 +413,13 @@ namespace opc_ua
 		// metadata
 		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
 		virtual void unserialize(SerializationContext& ctx, Serializer& s);
+		virtual UInt32 get_node_id() const { return NODE_ID; }
 	};
 
 	struct RelativePath : Struct
 	{
+		static constexpr UInt32 NODE_ID = 540;
+
 		Array<RelativePathElement> elements;
 
 		RelativePath(Array<RelativePathElement> new_elements = {});
@@ -392,10 +427,13 @@ namespace opc_ua
 		// metadata
 		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
 		virtual void unserialize(SerializationContext& ctx, Serializer& s);
+		virtual UInt32 get_node_id() const { return NODE_ID; }
 	};
 
 	struct BrowsePath : Struct
 	{
+		static constexpr UInt32 NODE_ID = 543;
+
 		NodeId starting_node;
 		RelativePath relative_path;
 
@@ -404,6 +442,7 @@ namespace opc_ua
 		// metadata
 		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
 		virtual void unserialize(SerializationContext& ctx, Serializer& s);
+		virtual UInt32 get_node_id() const { return NODE_ID; }
 	};
 
 	struct TranslateBrowsePathsToNodeIdsRequest : Request
@@ -417,7 +456,7 @@ namespace opc_ua
 		// metadata
 		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
 		virtual void unserialize(SerializationContext& ctx, Serializer& s);
-		virtual UInt32 node_id() const { return NODE_ID; }
+		virtual UInt32 get_node_id() const { return NODE_ID; }
 	};
 
 	enum class TimestampsToReturn
@@ -430,6 +469,8 @@ namespace opc_ua
 
 	struct ReadValueId : Struct
 	{
+		static constexpr UInt32 NODE_ID = 626;
+
 		NodeId node_id;
 		UInt32 attribute_id;
 		String index_range;
@@ -440,6 +481,7 @@ namespace opc_ua
 		// metadata
 		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
 		virtual void unserialize(SerializationContext& ctx, Serializer& s);
+		virtual UInt32 get_node_id() const { return NODE_ID; }
 	};
 
 	struct ReadRequest : Request
@@ -455,11 +497,13 @@ namespace opc_ua
 		// metadata
 		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
 		virtual void unserialize(SerializationContext& ctx, Serializer& s);
-		virtual UInt32 node_id() const { return NODE_ID; }
+		virtual UInt32 get_node_id() const { return NODE_ID; }
 	};
 
 	struct DataValue : Struct
 	{
+		static constexpr UInt32 NODE_ID = 23;
+
 		Byte flags;
 		Variant value;
 		StatusCode status_code;
@@ -473,6 +517,7 @@ namespace opc_ua
 		// metadata
 		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
 		virtual void unserialize(SerializationContext& ctx, Serializer& s);
+		virtual UInt32 get_node_id() const { return NODE_ID; }
 	};
 
 	struct ReadResponse : Response
@@ -487,7 +532,26 @@ namespace opc_ua
 		// metadata
 		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
 		virtual void unserialize(SerializationContext& ctx, Serializer& s);
-		virtual UInt32 node_id() const { return NODE_ID; }
+		virtual UInt32 get_node_id() const { return NODE_ID; }
+	};
+
+	struct UserIdentityToken : Struct
+	{
+		static constexpr UInt32 NODE_ID = 316;
+
+		String policy_id;
+
+		UserIdentityToken(String new_policy_id = "");
+
+		// metadata
+		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
+		virtual void unserialize(SerializationContext& ctx, Serializer& s);
+		virtual UInt32 get_node_id() const { return NODE_ID; }
+	};
+
+	struct AnonymousUserIdentityToken : UserIdentityToken
+	{
+		AnonymousUserIdentityToken();
 	};
 };
 

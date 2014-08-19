@@ -96,3 +96,8 @@ opc_ua::ByteString opc_ua::random_nonce()
 
 	return std::move(ret);
 }
+
+opc_ua::ExtensionObject::ExtensionObject(std::unique_ptr<Struct> obj)
+	: inner_object(std::move(obj))
+{
+}

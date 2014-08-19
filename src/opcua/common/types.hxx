@@ -11,6 +11,7 @@
 #include <array>
 #include <cstdint>
 #include <ctime>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -102,18 +103,21 @@ namespace opc_ua
 	{
 		virtual void serialize(SerializationContext& ctx, Serializer& s) const = 0;
 		virtual void unserialize(SerializationContext& ctx, Serializer& s) = 0;
+		virtual UInt32 get_node_id() const = 0;
 	};
 
 	// An abstract message.
 	struct Message : Struct
 	{
-		virtual UInt32 node_id() const = 0;
 	};
 
 	// Extension object.
-	// TODO: currently supports only null contents
+	// TODO: decoding
 	struct ExtensionObject
 	{
+		std::unique_ptr<Struct> inner_object;
+
+		ExtensionObject(std::unique_ptr<Struct> obj = nullptr);
 	};
 
 	template <class T>

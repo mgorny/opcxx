@@ -252,7 +252,7 @@ void opc_ua::tcp::MessageStream::write_message(Request& msg, MessageType msg_typ
 	};
 	srl.serialize(sctx, seqh);
 
-	NodeId msg_id(id_mapping.at(msg.node_id()));
+	NodeId msg_id(id_mapping.at(msg.get_node_id()));
 	srl.serialize(sctx, msg_id);
 
 	// fill request header in
@@ -286,7 +286,7 @@ bool opc_ua::tcp::MessageStream::process_secure_channel_response(SerializationCo
 	NodeId resp_id;
 
 	srl.unserialize(sctx, resp_id);
-	if (resp_id.type != NodeIdType::NUMERIC || resp_id.as_int != id_mapping.at(resp.node_id()))
+	if (resp_id.type != NodeIdType::NUMERIC || resp_id.as_int != id_mapping.at(resp.get_node_id()))
 		throw std::runtime_error("Unknown response for OPN");
 
 	srl.unserialize(sctx, resp);

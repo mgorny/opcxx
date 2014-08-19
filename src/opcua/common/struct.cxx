@@ -673,3 +673,22 @@ void opc_ua::ReadResponse::unserialize(SerializationContext& ctx, Serializer& s)
 	s.unserialize(ctx, ArrayUnserialization<DiagnosticInfo>(diagnostic_infos));
 }
 
+opc_ua::UserIdentityToken::UserIdentityToken(String new_policy_id)
+	: policy_id(new_policy_id)
+{
+}
+
+void opc_ua::UserIdentityToken::serialize(SerializationContext& ctx, Serializer& s) const
+{
+	s.serialize(ctx, policy_id);
+}
+
+void opc_ua::UserIdentityToken::unserialize(SerializationContext& ctx, Serializer& s)
+{
+	s.unserialize(ctx, policy_id);
+}
+
+opc_ua::AnonymousUserIdentityToken::AnonymousUserIdentityToken()
+	: UserIdentityToken("anonPolicy")
+{
+}
