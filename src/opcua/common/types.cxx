@@ -9,6 +9,7 @@
 
 #include "types.hxx"
 
+#include <cassert>
 #include <random>
 
 opc_ua::DateTime::DateTime()
@@ -29,6 +30,16 @@ opc_ua::DateTime opc_ua::DateTime::now()
 	return DateTime(ts);
 }
 
+bool opc_ua::GUID::operator==(const GUID& other) const
+{
+	return guid == other.guid;
+}
+
+bool opc_ua::GUID::operator!=(const GUID& other) const
+{
+	return guid != other.guid;
+}
+
 opc_ua::NodeId::NodeId(UInt32 node_id, UInt16 node_ns)
 	: type(NodeIdType::NUMERIC), ns(node_ns), as_int(node_id)
 {
@@ -47,6 +58,31 @@ opc_ua::NodeId::NodeId(const CharArray& node_id, UInt16 node_ns)
 opc_ua::NodeId::NodeId(const ByteString& node_id, UInt16 node_ns, int unused)
 	: type(NodeIdType::BYTE_STRING), ns(node_ns), as_bytestring(node_id)
 {
+}
+
+bool opc_ua::NodeId::operator==(const NodeId& other) const
+{
+	if (type != other.type)
+		return false;
+
+	switch (type)
+	{
+		case NodeIdType::NUMERIC:
+			return as_int == other.as_int;
+		case NodeIdType::STRING:
+			return as_chararray == other.as_chararray;
+		case NodeIdType::GUID:
+			return as_guid == other.as_guid;
+		case NodeIdType::BYTE_STRING:
+			return as_bytestring == other.as_bytestring;
+		default:
+			assert(not_reached);
+	}
+}
+
+bool opc_ua::NodeId::operator!=(const NodeId& other) const
+{
+	return !(*this == other);
 }
 
 opc_ua::ByteString opc_ua::random_nonce()

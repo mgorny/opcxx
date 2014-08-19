@@ -8,6 +8,7 @@
 #ifndef OPCUA_COMMON_TYPES_HXX
 #define OPCUA_COMMON_TYPES_HXX 1
 
+#include <array>
 #include <cstdint>
 #include <ctime>
 #include <string>
@@ -60,7 +61,10 @@ namespace opc_ua
 	{
 		// the specifications suggests splitting it into 4 fields...
 		// but let's keep it simple
-		Byte guid[16];
+		std::array<Byte, 16> guid;
+
+		bool operator==(const GUID& other) const;
+		bool operator!=(const GUID& other) const;
 	};
 
 	struct NodeId
@@ -82,6 +86,9 @@ namespace opc_ua
 		NodeId(const CharArray& node_id, UInt16 node_ns);
 		// ByteString NodeId
 		NodeId(const ByteString& node_id, UInt16 node_ns, int unused);
+
+		bool operator==(const NodeId& other) const;
+		bool operator!=(const NodeId& other) const;
 	};
 
 	enum class VariantType

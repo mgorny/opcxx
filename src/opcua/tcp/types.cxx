@@ -368,8 +368,8 @@ void opc_ua::tcp::BinarySerializer::unserialize(SerializationContext& ctx, GUID&
 	g.guid[3] = data1 & 0xff;
 	g.guid[4] = (data2 >> 8) & 0xff;
 	g.guid[5] = data2 & 0xff;
-	g.guid[6] = (data2 >> 8) & 0xff;
-	g.guid[7] = data2 & 0xff;
+	g.guid[6] = (data3 >> 8) & 0xff;
+	g.guid[7] = data3 & 0xff;
 
 	// last 8 bytes go as bytes
 	ctx.read(&g.guid[8], 8);

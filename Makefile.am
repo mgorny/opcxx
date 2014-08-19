@@ -38,6 +38,12 @@ test_SOURCES = \
 	test.cxx \
 	$(noinst_HEADERS)
 
+TESTS = tests/serializer
+check_PROGRAMS = tests/serializer
+
+tests_serializer_SOURCES = tests/serializer.cxx
+tests_serializer_LDADD = libopcua.la
+
 # Used to extract compile flags for YCM.
 print-%:
 	@echo $($*)

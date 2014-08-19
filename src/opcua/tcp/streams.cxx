@@ -256,12 +256,8 @@ void opc_ua::tcp::MessageStream::write_message(Request& msg, MessageType msg_typ
 	srl.serialize(sctx, msg_id);
 
 	// fill request header in
-	msg.request_header.authentication_token = NodeId(0);
 	msg.request_header.timestamp = DateTime::now();
 	msg.request_header.request_handle = seqh.request_id;
-	msg.request_header.return_diagnostics = 0;
-	msg.request_header.audit_entry_id = "";
-	msg.request_header.timeout_hint = 0;
 	srl.serialize(sctx, msg);
 
 	ts.write_message(msg_type, MessageIsFinal::FINAL, sctx, secure_channel_id);
@@ -388,8 +384,9 @@ void opc_ua::tcp::SessionStream::handle_activate_session(std::unique_ptr<Respons
 	SessionStream* self = static_cast<SessionStream*>(data);
 	ActivateSessionResponse* resp = dynamic_cast<ActivateSessionResponse*>(msg.get());
 
+	if (resp->results.at(0) != 0)
+		throw std::runtime_error("Activate session request failed");
 	self->session_established = true;
-	return;
 
 	ReadRequest rvr;
 	rvr.max_age = 100000;
