@@ -388,10 +388,10 @@ namespace opc_ua
 	{
 		static constexpr UInt32 NODE_ID = 20;
 
-		Int32 namespace_index;
+		UInt16 namespace_index;
 		CharArray name;
 
-		QualifiedName(Int32 ns_index = 0, CharArray new_name = "");
+		QualifiedName(UInt16 ns_index = 0, CharArray new_name = "");
 
 		// metadata
 		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
@@ -498,6 +498,16 @@ namespace opc_ua
 		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
 		virtual void unserialize(SerializationContext& ctx, Serializer& s);
 		virtual UInt32 get_node_id() const { return NODE_ID; }
+	};
+
+	enum class DataValueFlags
+	{
+		VALUE_SPECIFIED = 0x01,
+		STATUS_CODE_SPECIFIED = 0x02,
+		SOURCE_TIMESTAMP_SPECIFIED = 0x04,
+		SOURCE_PICOSECONDS_SPECIFIED = 0x08,
+		SERVER_TIMESTAMP_SPECIFIED = 0x10,
+		SERVER_PICOSECONDS_SPECIFIED = 0x20,
 	};
 
 	struct DataValue : Struct

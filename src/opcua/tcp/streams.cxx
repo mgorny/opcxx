@@ -392,10 +392,11 @@ void opc_ua::tcp::SessionStream::handle_activate_session(std::unique_ptr<Respons
 	self->session_established = true;
 
 	ReadRequest rvr;
-	rvr.max_age = 100000;
+	rvr.max_age = 0;
+	rvr.timestamps_to_return = opc_ua::TimestampsToReturn::SERVER;
 	rvr.nodes_to_read.emplace_back();
 	rvr.nodes_to_read[0].node_id = NodeId("sampleBuilding", 2);
-	rvr.nodes_to_read[0].attribute_id = 3;
+	rvr.nodes_to_read[0].attribute_id = 8;
 	self->write_message(rvr, [] (std::unique_ptr<Response> msg, void* data) {}, data);
 
 	//ns=2;'sampleBuilding'

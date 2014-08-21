@@ -92,10 +92,6 @@ namespace opc_ua
 		bool operator!=(const NodeId& other) const;
 	};
 
-	enum class VariantType
-	{
-	};
-
 	struct Serializer;
 
 	// An abstract structure needing serialization function.
@@ -123,9 +119,54 @@ namespace opc_ua
 	template <class T>
 	using Array = std::vector<T>;
 
+	enum class VariantType
+	{
+		NONE = 0,
+		BOOLEAN = 1,
+		BYTE = 3,
+		UINT16 = 5,
+		INT32 = 6,
+		UINT32 = 7,
+		INT64 = 8,
+		DOUBLE = 11,
+		STRING = 12,
+		DATETIME = 13,
+		GUID = 14,
+		BYTESTRING = 15,
+	};
+
 	struct Variant
 	{
 		VariantType variant_type;
+
+		union
+		{
+			Boolean as_boolean;
+			Byte as_byte;
+			UInt16 as_uint16;
+			Int32 as_int32;
+			UInt32 as_uint32;
+			Int64 as_int64;
+			Double as_double;
+			DateTime as_datetime;
+			GUID as_guid;
+		};
+
+		String as_string;
+		ByteString as_bytestring;
+
+		Variant();
+		Variant(Boolean b);
+		Variant(Byte b);
+		Variant(UInt16 i);
+		Variant(Int32 i);
+		Variant(UInt32 i);
+		Variant(Int64 i);
+		Variant(Double f);
+		Variant(const String& s);
+		Variant(DateTime dt);
+		Variant(const GUID& g);
+		Variant(const ByteString& s, int unused);
 	};
 
 	class AbstractArraySerialization

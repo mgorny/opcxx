@@ -511,7 +511,7 @@ void opc_ua::CloseSessionResponse::unserialize(SerializationContext& ctx, Serial
 	s.unserialize(ctx, response_header);
 }
 
-opc_ua::QualifiedName::QualifiedName(Int32 ns_index, CharArray new_name)
+opc_ua::QualifiedName::QualifiedName(UInt16 ns_index, CharArray new_name)
 	: namespace_index(ns_index), name(new_name)
 {
 }
@@ -652,23 +652,35 @@ opc_ua::DataValue::DataValue()
 void opc_ua::DataValue::serialize(SerializationContext& ctx, Serializer& s) const
 {
 	s.serialize(ctx, flags);
-	s.serialize(ctx, value);
-	s.serialize(ctx, status_code);
-	s.serialize(ctx, source_timestamp);
-	s.serialize(ctx, source_picoseconds);
-	s.serialize(ctx, server_timestamp);
-	s.serialize(ctx, server_picoseconds);
+	if (flags & static_cast<Byte>(DataValueFlags::VALUE_SPECIFIED))
+		s.serialize(ctx, value);
+	if (flags & static_cast<Byte>(DataValueFlags::STATUS_CODE_SPECIFIED))
+		s.serialize(ctx, status_code);
+	if (flags & static_cast<Byte>(DataValueFlags::SOURCE_TIMESTAMP_SPECIFIED))
+		s.serialize(ctx, source_timestamp);
+	if (flags & static_cast<Byte>(DataValueFlags::SOURCE_PICOSECONDS_SPECIFIED))
+		s.serialize(ctx, source_picoseconds);
+	if (flags & static_cast<Byte>(DataValueFlags::SERVER_TIMESTAMP_SPECIFIED))
+		s.serialize(ctx, server_timestamp);
+	if (flags & static_cast<Byte>(DataValueFlags::SERVER_PICOSECONDS_SPECIFIED))
+		s.serialize(ctx, server_picoseconds);
 }
 
 void opc_ua::DataValue::unserialize(SerializationContext& ctx, Serializer& s)
 {
 	s.unserialize(ctx, flags);
-	s.unserialize(ctx, value);
-	s.unserialize(ctx, status_code);
-	s.unserialize(ctx, source_timestamp);
-	s.unserialize(ctx, source_picoseconds);
-	s.unserialize(ctx, server_timestamp);
-	s.unserialize(ctx, server_picoseconds);
+	if (flags & static_cast<Byte>(DataValueFlags::VALUE_SPECIFIED))
+		s.unserialize(ctx, value);
+	if (flags & static_cast<Byte>(DataValueFlags::STATUS_CODE_SPECIFIED))
+		s.unserialize(ctx, status_code);
+	if (flags & static_cast<Byte>(DataValueFlags::SOURCE_TIMESTAMP_SPECIFIED))
+		s.unserialize(ctx, source_timestamp);
+	if (flags & static_cast<Byte>(DataValueFlags::SOURCE_PICOSECONDS_SPECIFIED))
+		s.unserialize(ctx, source_picoseconds);
+	if (flags & static_cast<Byte>(DataValueFlags::SERVER_TIMESTAMP_SPECIFIED))
+		s.unserialize(ctx, server_timestamp);
+	if (flags & static_cast<Byte>(DataValueFlags::SERVER_PICOSECONDS_SPECIFIED))
+		s.unserialize(ctx, server_picoseconds);
 }
 
 opc_ua::ReadResponse::ReadResponse()

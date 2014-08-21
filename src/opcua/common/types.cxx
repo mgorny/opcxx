@@ -101,3 +101,63 @@ opc_ua::ExtensionObject::ExtensionObject(std::unique_ptr<Struct> obj)
 	: inner_object(std::move(obj))
 {
 }
+
+opc_ua::Variant::Variant()
+	: variant_type(VariantType::NONE)
+{
+}
+
+opc_ua::Variant::Variant(Boolean b)
+	: variant_type(VariantType::BOOLEAN), as_boolean(b)
+{
+}
+
+opc_ua::Variant::Variant(Byte b)
+	: variant_type(VariantType::BYTE), as_byte(b)
+{
+}
+
+opc_ua::Variant::Variant(UInt16 i)
+	: variant_type(VariantType::UINT16), as_uint16(i)
+{
+}
+
+opc_ua::Variant::Variant(Int32 i)
+	: variant_type(VariantType::INT32), as_int32(i)
+{
+}
+
+opc_ua::Variant::Variant(UInt32 i)
+	: variant_type(VariantType::UINT32), as_uint32(i)
+{
+}
+
+opc_ua::Variant::Variant(Int64 i)
+	: variant_type(VariantType::INT64), as_int64(i)
+{
+}
+
+opc_ua::Variant::Variant(Double f)
+	: variant_type(VariantType::DOUBLE), as_double(f)
+{
+}
+
+opc_ua::Variant::Variant(const String& s)
+	: variant_type(VariantType::STRING), as_string(s)
+{
+}
+
+opc_ua::Variant::Variant(DateTime dt)
+	: variant_type(VariantType::DATETIME), as_datetime(dt)
+{
+}
+
+opc_ua::Variant::Variant(const GUID& g)
+	: variant_type(VariantType::GUID), as_guid(g)
+{
+}
+
+opc_ua::Variant::Variant(const ByteString& s, int unused)
+	: variant_type(VariantType::BYTESTRING), as_bytestring(s)
+{
+}
