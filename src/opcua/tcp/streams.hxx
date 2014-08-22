@@ -138,6 +138,9 @@ namespace opc_ua
 			};
 			std::unordered_map<UInt32, callback_data> callbacks;
 
+			// callback for session start
+			callback_data session_established_callback;
+
 			// internal callbacks
 			static void handle_create_session(std::unique_ptr<Response> msg, void* data);
 			static void handle_activate_session(std::unique_ptr<Response> msg, void* data);
@@ -149,7 +152,7 @@ namespace opc_ua
 			void write_message(Request& msg, request_callback_type callback, void* cb_data);
 
 			// Attach to a secure channel.
-			void attach(MessageStream& ms, const std::string& endpoint);
+			void attach(MessageStream& ms, const std::string& endpoint, request_callback_type on_established = {}, void* cb_data = nullptr);
 			// Start/resume session.
 			void open_session();
 			// Handle incoming message.

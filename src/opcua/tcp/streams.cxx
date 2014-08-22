@@ -426,17 +426,8 @@ void opc_ua::tcp::SessionStream::handle_activate_session(std::unique_ptr<Respons
 		throw std::runtime_error("Activate session request failed");
 	self->session_established = true;
 
-	ReadRequest rvr;
-	rvr.max_age = 0;
-	rvr.timestamps_to_return = opc_ua::TimestampsToReturn::SERVER;
-	rvr.nodes_to_read.emplace_back();
-	rvr.nodes_to_read[0].node_id = NodeId("sampleBuilding", 2);
-	rvr.nodes_to_read[0].attribute_id = 3;
-	for (int i = 0; i < 200; ++i)
-		rvr.nodes_to_read.push_back(rvr.nodes_to_read[0]);
-	self->write_message(rvr, [] (std::unique_ptr<Response> msg, void* data) {}, data);
-
-	//ns=2;'sampleBuilding'
+	self->session_established_callback.callback(std::move(msg),
+			self->session_established_callback.data);
 }
 
 opc_ua::tcp::SessionStream::SessionStream(const std::string& sess_name)
@@ -456,11 +447,14 @@ void opc_ua::tcp::SessionStream::write_message(Request& msg, request_callback_ty
 	};
 }
 
-void opc_ua::tcp::SessionStream::attach(MessageStream& ms, const std::string& endpoint)
+void opc_ua::tcp::SessionStream::attach(MessageStream& ms, const std::string& endpoint, request_callback_type on_established, void* cb_data)
 {
 	secure_channel = &ms;
 	endpoint_uri = endpoint;
 	ms.attach_session(*this);
+
+	session_established_callback.callback = on_established;
+	session_established_callback.data = cb_data;
 }
 
 void opc_ua::tcp::SessionStream::open_session()
