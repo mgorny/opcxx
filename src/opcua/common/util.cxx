@@ -12,10 +12,6 @@
 #include <cassert>
 #include <stdexcept>
 
-opc_ua::SerializationBuffer::SerializationBuffer()
-{
-}
-
 opc_ua::SerializationBuffer::SerializationBuffer(evbuffer* new_buf)
 	: buf(new_buf)
 {
@@ -32,10 +28,6 @@ opc_ua::ReadableSerializationBuffer::ReadableSerializationBuffer(evbuffer* new_b
 {
 }
 
-opc_ua::ReadableSerializationBuffer::ReadableSerializationBuffer()
-{
-}
-
 void opc_ua::ReadableSerializationBuffer::read(void* data, size_t length)
 {
 	ssize_t rd = evbuffer_remove(buf, data, length);
@@ -46,10 +38,6 @@ void opc_ua::ReadableSerializationBuffer::read(void* data, size_t length)
 
 opc_ua::WritableSerializationBuffer::WritableSerializationBuffer(evbuffer* new_buf)
 	: SerializationBuffer(new_buf)
-{
-}
-
-opc_ua::WritableSerializationBuffer::WritableSerializationBuffer()
 {
 }
 
@@ -74,7 +62,12 @@ void opc_ua::WritableSerializationBuffer::move(ReadableSerializationBuffer& othe
 }
 
 opc_ua::MemorySerializationBuffer::MemorySerializationBuffer()
-	: SerializationBuffer(evbuffer_new())
+	: SerializationBuffer(evbuffer_new()),
+	ReadableSerializationBuffer(nullptr),
+	WritableSerializationBuffer(nullptr)
+// Note: nullptr above are invalid and asserted for but the constructor
+// should be not be called because of the virtual inheritance. If it
+// does, the asserts will tell us.
 {
 }
 

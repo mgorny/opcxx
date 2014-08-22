@@ -21,7 +21,6 @@ namespace opc_ua
 	protected:
 		evbuffer* buf;
 
-		SerializationBuffer();
 		SerializationBuffer(evbuffer* new_buf);
 
 	public:
@@ -34,9 +33,6 @@ namespace opc_ua
 	{
 		friend class WritableSerializationBuffer;
 
-	protected:
-		ReadableSerializationBuffer();
-
 	public:
 		ReadableSerializationBuffer(evbuffer* new_buf);
 
@@ -47,9 +43,6 @@ namespace opc_ua
 	// Serialization buffer that is associated with a writable stream.
 	class WritableSerializationBuffer : public virtual SerializationBuffer
 	{
-	protected:
-		WritableSerializationBuffer();
-
 	public:
 		WritableSerializationBuffer(evbuffer* new_buf);
 
