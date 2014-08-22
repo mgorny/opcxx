@@ -30,6 +30,16 @@ opc_ua::DateTime opc_ua::DateTime::now()
 	return DateTime(ts);
 }
 
+bool opc_ua::DateTime::operator==(DateTime other) const
+{
+	return ts.tv_sec == other.ts.tv_sec && ts.tv_nsec == other.ts.tv_nsec;
+}
+
+bool opc_ua::DateTime::operator!=(DateTime other) const
+{
+	return ts.tv_sec != other.ts.tv_sec || ts.tv_nsec != other.ts.tv_nsec;
+}
+
 bool opc_ua::GUID::operator==(const GUID& other) const
 {
 	return guid == other.guid;
@@ -160,4 +170,45 @@ opc_ua::Variant::Variant(const GUID& g)
 opc_ua::Variant::Variant(const ByteString& s, int unused)
 	: variant_type(VariantType::BYTESTRING), as_bytestring(s)
 {
+}
+
+bool opc_ua::Variant::operator==(const Variant& other) const
+{
+	if (variant_type != other.variant_type)
+		return false;
+
+	switch (variant_type)
+	{
+		case VariantType::NONE:
+			return true;
+		case VariantType::BOOLEAN:
+			return as_boolean == other.as_boolean;
+		case VariantType::BYTE:
+			return as_byte == other.as_byte;
+		case VariantType::UINT16:
+			return as_uint16 == other.as_uint16;
+		case VariantType::INT32:
+			return as_int32 == other.as_int32;
+		case VariantType::UINT32:
+			return as_uint32 == other.as_uint32;
+		case VariantType::INT64:
+			return as_int64 == other.as_int64;
+		case VariantType::DOUBLE:
+			return as_double == other.as_double;
+		case VariantType::STRING:
+			return as_string == other.as_string;
+		case VariantType::DATETIME:
+			return as_datetime == other.as_datetime;
+		case VariantType::GUID:
+			return as_guid == other.as_guid;
+		case VariantType::BYTESTRING:
+			return as_bytestring == other.as_bytestring;
+		default:
+			assert(not_reached);
+	}
+}
+
+bool opc_ua::Variant::operator!=(const Variant& other) const
+{
+	return !(*this == other);
 }

@@ -67,5 +67,10 @@ int main()
 	test_serialize<opc_ua::NodeId>(opc_ua::NodeId(0x72), {0x00, 0x72});
 	test_serialize<opc_ua::NodeId>(opc_ua::NodeId(1025, 5), {0x01, 0x05, 0x01, 0x04});
 
+	// Test variants
+	test_serialize<opc_ua::Variant>(opc_ua::Variant(true), {0x01, 0x01});
+	test_serialize<opc_ua::Variant>(opc_ua::Variant(opc_ua::String("ABCD")),
+			{0x0C, 0x04, 0x00, 0x00, 0x00, 0x41, 0x42, 0x43, 0x44});
+
 	return 0;
 }

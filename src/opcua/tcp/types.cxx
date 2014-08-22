@@ -204,7 +204,49 @@ void opc_ua::tcp::BinarySerializer::serialize(WritableSerializationBuffer& ctx, 
 
 void opc_ua::tcp::BinarySerializer::serialize(WritableSerializationBuffer& ctx, const Variant& v)
 {
-	throw std::runtime_error("Not implemented yet");
+	Byte encoding_mask;
+
+	encoding_mask = static_cast<Byte>(v.variant_type);
+	serialize(ctx, encoding_mask);
+
+	switch (v.variant_type)
+	{
+		case VariantType::BOOLEAN:
+			serialize(ctx, v.as_boolean);
+			break;
+		case VariantType::BYTE:
+			serialize(ctx, v.as_byte);
+			break;
+		case VariantType::UINT16:
+			serialize(ctx, v.as_uint16);
+			break;
+		case VariantType::INT32:
+			serialize(ctx, v.as_int32);
+			break;
+		case VariantType::UINT32:
+			serialize(ctx, v.as_uint32);
+			break;
+		case VariantType::INT64:
+			serialize(ctx, v.as_int64);
+			break;
+		case VariantType::DOUBLE:
+			serialize(ctx, v.as_double);
+			break;
+		case VariantType::STRING:
+			serialize(ctx, v.as_string);
+			break;
+		case VariantType::DATETIME:
+			serialize(ctx, v.as_datetime);
+			break;
+		case VariantType::GUID:
+			serialize(ctx, v.as_guid);
+			break;
+		case VariantType::BYTESTRING:
+			serialize(ctx, v.as_bytestring);
+			break;
+		default:
+			throw std::runtime_error("Unsupported variant type");
+	}
 }
 
 void opc_ua::tcp::BinarySerializer::serialize(WritableSerializationBuffer& ctx, MessageType t)
@@ -509,8 +551,6 @@ void opc_ua::tcp::BinarySerializer::unserialize(ReadableSerializationBuffer& ctx
 	unserialize(ctx, encoding_mask);
 	is_array = encoding_mask & 0x80;
 	vtype = static_cast<VariantType>(encoding_mask & ~0x80);
-
-	std::cout << (int) encoding_mask << std::endl;
 
 	if (is_array)
 		throw std::runtime_error("Variant arrays unsupported");

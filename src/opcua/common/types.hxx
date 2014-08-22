@@ -42,6 +42,9 @@ namespace opc_ua
 
 		// get current time with max available precision
 		static DateTime now();
+
+		bool operator==(DateTime other) const;
+		bool operator!=(DateTime other) const;
 	};
 
 	struct LocalizedText
@@ -167,6 +170,9 @@ namespace opc_ua
 		Variant(DateTime dt);
 		Variant(const GUID& g);
 		Variant(const ByteString& s, int unused);
+
+		bool operator==(const Variant& other) const;
+		bool operator!=(const Variant& other) const;
 	};
 
 	class AbstractArraySerialization
