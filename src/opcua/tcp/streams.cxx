@@ -313,21 +313,53 @@ void opc_ua::tcp::MessageStream::close()
 	write_message(req, MessageType::CLO);
 }
 
-void opc_ua::tcp::MessageStream::handle_message(MessageHeader& h, ReadableSerializationBuffer& body)
+void opc_ua::tcp::MessageStream::handle_message(MessageHeader& h, ReadableSerializationBuffer& chunk)
 {
 	BinarySerializer srl;
 	SymmetricAlgorithmSecurityHeader sech;
-	srl.unserialize(body, sech);
+	srl.unserialize(chunk, sech);
 
 	if (sech.token_id != token_id)
 		throw std::runtime_error("Incorrect token ID received");
 
 	SequenceHeader seqh;
-	srl.unserialize(body, seqh);
+	srl.unserialize(chunk, seqh);
 
-	if (h.is_final != MessageIsFinal::FINAL)
-		throw std::runtime_error("Non-final message received");
-	// TODO: chunks and stuff
+	MemorySerializationBuffer body;
+
+	switch (h.is_final)
+	{
+		case MessageIsFinal::INTERMEDIATE:
+			chunk_store[seqh.request_id].move(chunk);
+			return;
+		case MessageIsFinal::ABORTED:
+		{
+			UInt32 error;
+			String reason;
+
+			srl.unserialize(chunk, error);
+			srl.unserialize(chunk, reason);
+			// TODO: report the error
+
+			chunk_store.erase(seqh.request_id);
+			return;
+		}
+		case MessageIsFinal::FINAL:
+		{
+			auto it = chunk_store.find(seqh.request_id);
+
+			if (it != chunk_store.end())
+			{
+				body.move((*it).second);
+				chunk_store.erase(it);
+			}
+
+			body.move(chunk);
+			break;
+		}
+		default:
+			throw std::runtime_error("Invalid IsFinal value");
+	}
 
 	NodeId msg_id;
 	srl.unserialize(body, msg_id);
@@ -344,6 +376,9 @@ void opc_ua::tcp::MessageStream::handle_message(MessageHeader& h, ReadableSerial
 	// convert to Response
 	// XXX: check type properly
 	std::unique_ptr<Response> resp(dynamic_cast<Response*>(msg));
+
+	if (body.size() != 0)
+		throw std::runtime_error("Part of message body not unserialized");
 
 	switch (h.message_type)
 	{
@@ -396,7 +431,9 @@ void opc_ua::tcp::SessionStream::handle_activate_session(std::unique_ptr<Respons
 	rvr.timestamps_to_return = opc_ua::TimestampsToReturn::SERVER;
 	rvr.nodes_to_read.emplace_back();
 	rvr.nodes_to_read[0].node_id = NodeId("sampleBuilding", 2);
-	rvr.nodes_to_read[0].attribute_id = 8;
+	rvr.nodes_to_read[0].attribute_id = 3;
+	for (int i = 0; i < 200; ++i)
+		rvr.nodes_to_read.push_back(rvr.nodes_to_read[0]);
 	self->write_message(rvr, [] (std::unique_ptr<Response> msg, void* data) {}, data);
 
 	//ns=2;'sampleBuilding'

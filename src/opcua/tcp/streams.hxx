@@ -84,6 +84,9 @@ namespace opc_ua
 			// security token id for further messages
 			UInt32 token_id;
 
+			// segmented message support
+			std::unordered_map<UInt32, MemorySerializationBuffer> chunk_store;
+
 		public:
 			MessageStream(TransportStream& new_ts);
 			~MessageStream();
@@ -100,7 +103,7 @@ namespace opc_ua
 			// request closing secure channel
 			void close();
 			// handle incoming message.
-			void handle_message(MessageHeader& h, ReadableSerializationBuffer& body);
+			void handle_message(MessageHeader& h, ReadableSerializationBuffer& chunk);
 
 			// Attach a new session stream.
 			void attach_session(SessionStream& s);
