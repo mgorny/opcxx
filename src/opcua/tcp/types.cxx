@@ -538,6 +538,18 @@ void opc_ua::tcp::BinarySerializer::unserialize(ReadableSerializationBuffer& ctx
 		case VariantType::DOUBLE:
 			unserialize(ctx, v.as_double);
 			break;
+		case VariantType::STRING:
+			unserialize(ctx, v.as_string);
+			break;
+		case VariantType::DATETIME:
+			unserialize(ctx, v.as_datetime);
+			break;
+		case VariantType::GUID:
+			unserialize(ctx, v.as_guid);
+			break;
+		case VariantType::BYTESTRING:
+			unserialize(ctx, v.as_bytestring);
+			break;
 		default:
 			throw std::runtime_error("Unsupported variant type");
 	}

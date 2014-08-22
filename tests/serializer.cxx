@@ -11,54 +11,61 @@
 #include <opcua/common/util.hxx>
 #include <opcua/tcp/types.hxx>
 
-#include <cstring>
+#include <cstdint>
 
 template <class T>
-void test_serialization(const T& val1)
+void test_unserialize(const std::vector<uint8_t> ser_val, const T& val1)
 {
-	opc_ua::TemporarySerializationContext ctx;
+	opc_ua::MemorySerializationBuffer buf;
 	opc_ua::tcp::BinarySerializer s;
 	T val2;
 
-	s.serialize(ctx, val1);
-	s.unserialize(ctx, val2);
+	// move data into a buffer
+	buf.write(ser_val.data(), ser_val.size());
+
+	// unserialize the value
+	s.unserialize(buf, val2);
 
 	if (val1 != val2)
-		throw std::runtime_error("Serialization + unserialization returns different result");
+		throw std::logic_error("Unserialization returned different value");
+}
+
+template <class T>
+void test_serialize(const T& val1, const std::vector<uint8_t> ser_exp)
+{
+	opc_ua::MemorySerializationBuffer buf;
+	opc_ua::tcp::BinarySerializer s;
+	std::vector<uint8_t> ser_val;
+
+	// serialize the value into the buffer
+	s.serialize(buf, val1);
+
+	// move contents of the buffer to a vector
+	ser_val.resize(buf.size());
+	buf.read(ser_val.data(), ser_val.size());
+
+	if (ser_val != ser_exp)
+		throw std::logic_error("Serialized value does not match reference");
+
+	test_unserialize(ser_val, val1);
 }
 
 int main()
 {
-	// Integral types
-	test_serialization<opc_ua::Byte>(0);
-	test_serialization<opc_ua::Byte>(15);
-	test_serialization<opc_ua::Byte>(255);
-	test_serialization<opc_ua::UInt16>(0x0060);
-	test_serialization<opc_ua::UInt16>(0x2345);
-	test_serialization<opc_ua::UInt32>(0x11335577);
-	test_serialization<opc_ua::UInt32>(0xffffffff);
-	test_serialization<opc_ua::Int32>(-0x10000000);
-	test_serialization<opc_ua::Int32>(0x12343210);
-	test_serialization<opc_ua::Int64>(-0x0044008800cc00ff);
-	test_serialization<opc_ua::Int64>(0x44008800cc00ff00);
-
-	// Floating-point types
-	test_serialization<opc_ua::Double>(0.5551);
-	test_serialization<opc_ua::Double>(-3.33);
-
-	// String type
-	test_serialization<opc_ua::String>("");
-	test_serialization<opc_ua::String>("foobarbaz");
-
-	// NodeID
-	test_serialization<opc_ua::NodeId>({25, 2});
-	test_serialization<opc_ua::NodeId>({0xaa00, 2});
-	test_serialization<opc_ua::NodeId>({0x33bbccdd, 0x1100});
-	test_serialization<opc_ua::NodeId>({"foobarbaz", 2});
-
-	opc_ua::GUID g;
-	memcpy(g.guid.data(), "ABCDEFGHIJKLMNOP", sizeof(g.guid));
-	test_serialization<opc_ua::NodeId>({g, 2});
+	// Spec-provided examples
+	test_serialize<opc_ua::Boolean>(false, {0});
+	test_serialize<opc_ua::Boolean>(true, {1});
+	test_unserialize<opc_ua::Boolean>({122}, true);
+	test_serialize<opc_ua::UInt32>(1000000000, {0x00, 0xCA, 0x9A, 0x3B});
+	test_serialize<opc_ua::String>("水Boy", {0x06, 0x00, 0x00, 0x00, 0xE6, 0xB0, 0xB4, 0x42, 0x6F, 0x79});
+	test_serialize<opc_ua::GUID>(
+			{0x72, 0x96, 0x2B, 0x91, 0xFA, 0x75, 0x4A, 0xE6, 0x8D, 0x28, 0xB4, 0x04, 0xDC, 0x7D, 0xAF, 0x63},
+			{0x91, 0x2B, 0x96, 0x72, 0x75, 0xFA, 0xE6, 0x4A, 0x8D, 0x28, 0xB4, 0x04, 0xDC, 0x7D, 0xAF, 0x63});
+	test_serialize<opc_ua::NodeId>(
+			opc_ua::NodeId("Hot水", 1),
+			{0x03, 0x01, 0x00, 0x06, 0x00, 0x00, 0x00, 0x48, 0x6F, 0x74, 0xE6, 0xB0, 0xB4});
+	test_serialize<opc_ua::NodeId>(opc_ua::NodeId(0x72), {0x00, 0x72});
+	test_serialize<opc_ua::NodeId>(opc_ua::NodeId(1025, 5), {0x01, 0x05, 0x01, 0x04});
 
 	return 0;
 }
