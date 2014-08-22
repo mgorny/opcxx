@@ -50,7 +50,7 @@ void opc_ua::tcp::TransportStream::connect_hostname(const char* hostname, uint16
 		.endpoint_url = endpoint,
 	};
 
-	TemporarySerializationContext sctx;
+	MemorySerializationBuffer sctx;
 	BinarySerializer srl;
 	srl.serialize(sctx, hello);
 	write_message(MessageType::HEL, MessageIsFinal::FINAL, sctx);
@@ -77,7 +77,7 @@ void opc_ua::tcp::TransportStream::read_handler(bufferevent* bev, void* ctx)
 	if (s->in_ctx.size() < s->h.message_size - s->h.serialized_length)
 		return;
 
-	TemporarySerializationContext buf;
+	MemorySerializationBuffer buf;
 	buf.move(s->in_ctx, s->h.message_size - s->h.serialized_length);
 
 	// process the message
@@ -120,7 +120,7 @@ void opc_ua::tcp::TransportStream::read_handler(bufferevent* bev, void* ctx)
 				MessageStream* ms = *i;
 
 				// copy the current input into a local buffer
-				TemporarySerializationContext copy_buf;
+				MemorySerializationBuffer copy_buf;
 				copy_buf.write(data_copy.data(), data_copy.size());
 
 				if (ms->process_secure_channel_response(copy_buf, secure_channel_id))
@@ -169,7 +169,7 @@ void opc_ua::tcp::TransportStream::event_handler(bufferevent* bev, short what, v
 		throw std::runtime_error("Transport stream error");
 }
 
-void opc_ua::tcp::TransportStream::write_message(MessageType msg_type, MessageIsFinal is_final, SerializationContext& msg, UInt32 channel_id)
+void opc_ua::tcp::TransportStream::write_message(MessageType msg_type, MessageIsFinal is_final, ReadableSerializationBuffer& msg, UInt32 channel_id)
 {
 	BinarySerializer srl;
 
@@ -202,7 +202,7 @@ void opc_ua::tcp::TransportStream::write_message(MessageType msg_type, MessageIs
 			assert(not_reached);
 	}
 
-	out_ctx.write(msg);
+	out_ctx.move(msg);
 }
 
 void opc_ua::tcp::TransportStream::add_secure_channel(MessageStream& ms)
@@ -224,7 +224,7 @@ opc_ua::tcp::MessageStream::~MessageStream()
 
 void opc_ua::tcp::MessageStream::write_message(Request& msg, MessageType msg_type)
 {
-	TemporarySerializationContext sctx;
+	MemorySerializationBuffer sctx;
 	BinarySerializer srl;
 
 	// OPN message takes asymmetric header
@@ -273,7 +273,7 @@ void opc_ua::tcp::MessageStream::request_secure_channel()
 	write_message(req, MessageType::OPN);
 }
 
-bool opc_ua::tcp::MessageStream::process_secure_channel_response(SerializationContext& sctx, UInt32 channel_id)
+bool opc_ua::tcp::MessageStream::process_secure_channel_response(ReadableSerializationBuffer& sctx, UInt32 channel_id)
 {
 	BinarySerializer srl;
 	AsymmetricAlgorithmSecurityHeader sech;
@@ -313,7 +313,7 @@ void opc_ua::tcp::MessageStream::close()
 	write_message(req, MessageType::CLO);
 }
 
-void opc_ua::tcp::MessageStream::handle_message(MessageHeader& h, SerializationContext& body)
+void opc_ua::tcp::MessageStream::handle_message(MessageHeader& h, ReadableSerializationBuffer& body)
 {
 	BinarySerializer srl;
 	SymmetricAlgorithmSecurityHeader sech;

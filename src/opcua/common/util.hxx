@@ -15,40 +15,62 @@ namespace opc_ua
 	// for use in assertions
 	constexpr bool not_reached = false;
 
-	// Context to use for serialization functions. Mostly serves
-	// as an abstract wrapper for stream-associated buffer.
-	class SerializationContext
+	// A base class for buffers used for serialization.
+	class SerializationBuffer
 	{
 	protected:
-		evbuffer* _buf;
+		evbuffer* buf;
+
+		SerializationBuffer();
+		SerializationBuffer(evbuffer* new_buf);
 
 	public:
-		SerializationContext(evbuffer* buf);
-
 		// get length of data stored in the buffer
-		size_t size();
-		// read data from the buffer
-		void read(void* data, size_t size);
-		// append new block of data to the buffer
-		void write(const void* data, size_t size);
-		// copy contents of a buffer associated with another
-		// SerializationContext to the buffer
-		void write(const SerializationContext& ctx);
-
-		// move contents of a buffer associated with another
-		// SerializationContext
-		void move(SerializationContext& orig, size_t length);
+		size_t size() const;
 	};
 
-	// Context used to store part of serialized data. Allocates
-	// a local buffer for the data.
-	class TemporarySerializationContext : public SerializationContext
+	// Serialization buffer that is associated with a readable stream.
+	class ReadableSerializationBuffer : public virtual SerializationBuffer
+	{
+		friend class WritableSerializationBuffer;
+
+	protected:
+		ReadableSerializationBuffer();
+
+	public:
+		ReadableSerializationBuffer(evbuffer* new_buf);
+
+		// read data from the buffer
+		void read(void* data, size_t length);
+	};
+
+	// Serialization buffer that is associated with a writable stream.
+	class WritableSerializationBuffer : public virtual SerializationBuffer
+	{
+	protected:
+		WritableSerializationBuffer();
+
+	public:
+		WritableSerializationBuffer(evbuffer* new_buf);
+
+		// append new block of data to the buffer
+		void write(const void* data, size_t length);
+
+		// move data from another buffer into this one
+		void move(ReadableSerializationBuffer& other);
+		// move part of data from another buffer into this one
+		void move(ReadableSerializationBuffer& other, size_t length);
+	};
+
+	// Serializes buffer that uses private memory storage for underlying
+	// data. This works as a FIFO loopback -- writes append to the end
+	// of the buffer, reads remove data from the beginning.
+	class MemorySerializationBuffer : public ReadableSerializationBuffer,
+			public WritableSerializationBuffer
 	{
 	public:
-		TemporarySerializationContext();
-		~TemporarySerializationContext();
-
-		void clear();
+		MemorySerializationBuffer();
+		~MemorySerializationBuffer();
 	};
 };
 

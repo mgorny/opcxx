@@ -61,7 +61,7 @@ opc_ua::RequestHeader::RequestHeader()
 {
 }
 
-void opc_ua::RequestHeader::serialize(SerializationContext& ctx, Serializer& s) const
+void opc_ua::RequestHeader::serialize(WritableSerializationBuffer& ctx, Serializer& s) const
 {
 	s.serialize(ctx, authentication_token);
 	s.serialize(ctx, timestamp);
@@ -72,7 +72,7 @@ void opc_ua::RequestHeader::serialize(SerializationContext& ctx, Serializer& s) 
 	s.serialize(ctx, additional_header);
 }
 
-void opc_ua::RequestHeader::unserialize(SerializationContext& ctx, Serializer& s)
+void opc_ua::RequestHeader::unserialize(ReadableSerializationBuffer& ctx, Serializer& s)
 {
 	s.unserialize(ctx, authentication_token);
 	s.unserialize(ctx, timestamp);
@@ -88,12 +88,12 @@ opc_ua::DiagnosticInfo::DiagnosticInfo()
 {
 }
 
-void opc_ua::DiagnosticInfo::serialize(SerializationContext& ctx, Serializer& s) const
+void opc_ua::DiagnosticInfo::serialize(WritableSerializationBuffer& ctx, Serializer& s) const
 {
 	s.serialize(ctx, flags);
 }
 
-void opc_ua::DiagnosticInfo::unserialize(SerializationContext& ctx, Serializer& s)
+void opc_ua::DiagnosticInfo::unserialize(ReadableSerializationBuffer& ctx, Serializer& s)
 {
 	s.unserialize(ctx, flags);
 }
@@ -104,7 +104,7 @@ opc_ua::ResponseHeader::ResponseHeader()
 {
 }
 
-void opc_ua::ResponseHeader::serialize(SerializationContext& ctx, Serializer& s) const
+void opc_ua::ResponseHeader::serialize(WritableSerializationBuffer& ctx, Serializer& s) const
 {
 	s.serialize(ctx, timestamp);
 	s.serialize(ctx, request_handle);
@@ -114,7 +114,7 @@ void opc_ua::ResponseHeader::serialize(SerializationContext& ctx, Serializer& s)
 	s.serialize(ctx, additional_header);
 }
 
-void opc_ua::ResponseHeader::unserialize(SerializationContext& ctx, Serializer& s)
+void opc_ua::ResponseHeader::unserialize(ReadableSerializationBuffer& ctx, Serializer& s)
 {
 	s.unserialize(ctx, timestamp);
 	s.unserialize(ctx, request_handle);
@@ -133,7 +133,7 @@ opc_ua::OpenSecureChannelRequest::OpenSecureChannelRequest(SecurityTokenRequestT
 {
 }
 
-void opc_ua::OpenSecureChannelRequest::serialize(SerializationContext& ctx, Serializer& s) const
+void opc_ua::OpenSecureChannelRequest::serialize(WritableSerializationBuffer& ctx, Serializer& s) const
 {
 	s.serialize(ctx, request_header);
 	s.serialize(ctx, client_protocol_version);
@@ -143,7 +143,7 @@ void opc_ua::OpenSecureChannelRequest::serialize(SerializationContext& ctx, Seri
 	s.serialize(ctx, requested_lifetime);
 }
 
-void opc_ua::OpenSecureChannelRequest::unserialize(SerializationContext& ctx, Serializer& s)
+void opc_ua::OpenSecureChannelRequest::unserialize(ReadableSerializationBuffer& ctx, Serializer& s)
 {
 	UInt32 n_request_type, n_security_mode;
 
@@ -163,7 +163,7 @@ opc_ua::ChannelSecurityToken::ChannelSecurityToken()
 {
 }
 
-void opc_ua::ChannelSecurityToken::serialize(SerializationContext& ctx, Serializer& s) const
+void opc_ua::ChannelSecurityToken::serialize(WritableSerializationBuffer& ctx, Serializer& s) const
 {
 	s.serialize(ctx, channel_id);
 	s.serialize(ctx, token_id);
@@ -171,7 +171,7 @@ void opc_ua::ChannelSecurityToken::serialize(SerializationContext& ctx, Serializ
 	s.serialize(ctx, revised_lifetime);
 }
 
-void opc_ua::ChannelSecurityToken::unserialize(SerializationContext& ctx, Serializer& s)
+void opc_ua::ChannelSecurityToken::unserialize(ReadableSerializationBuffer& ctx, Serializer& s)
 {
 	s.unserialize(ctx, channel_id);
 	s.unserialize(ctx, token_id);
@@ -184,7 +184,7 @@ opc_ua::OpenSecureChannelResponse::OpenSecureChannelResponse()
 {
 }
 
-void opc_ua::OpenSecureChannelResponse::serialize(SerializationContext& ctx, Serializer& s) const
+void opc_ua::OpenSecureChannelResponse::serialize(WritableSerializationBuffer& ctx, Serializer& s) const
 {
 	s.serialize(ctx, response_header);
 	s.serialize(ctx, server_protocol_version);
@@ -192,7 +192,7 @@ void opc_ua::OpenSecureChannelResponse::serialize(SerializationContext& ctx, Ser
 	s.serialize(ctx, server_nonce);
 }
 
-void opc_ua::OpenSecureChannelResponse::unserialize(SerializationContext& ctx, Serializer& s)
+void opc_ua::OpenSecureChannelResponse::unserialize(ReadableSerializationBuffer& ctx, Serializer& s)
 {
 	s.unserialize(ctx, response_header);
 	s.unserialize(ctx, server_protocol_version);
@@ -204,12 +204,12 @@ opc_ua::CloseSecureChannelRequest::CloseSecureChannelRequest()
 {
 }
 
-void opc_ua::CloseSecureChannelRequest::serialize(SerializationContext& ctx, Serializer& s) const
+void opc_ua::CloseSecureChannelRequest::serialize(WritableSerializationBuffer& ctx, Serializer& s) const
 {
 	s.serialize(ctx, request_header);
 }
 
-void opc_ua::CloseSecureChannelRequest::unserialize(SerializationContext& ctx, Serializer& s)
+void opc_ua::CloseSecureChannelRequest::unserialize(ReadableSerializationBuffer& ctx, Serializer& s)
 {
 	s.unserialize(ctx, request_header);
 }
@@ -218,12 +218,12 @@ opc_ua::CloseSecureChannelResponse::CloseSecureChannelResponse()
 {
 }
 
-void opc_ua::CloseSecureChannelResponse::serialize(SerializationContext& ctx, Serializer& s) const
+void opc_ua::CloseSecureChannelResponse::serialize(WritableSerializationBuffer& ctx, Serializer& s) const
 {
 	s.serialize(ctx, response_header);
 }
 
-void opc_ua::CloseSecureChannelResponse::unserialize(SerializationContext& ctx, Serializer& s)
+void opc_ua::CloseSecureChannelResponse::unserialize(ReadableSerializationBuffer& ctx, Serializer& s)
 {
 	s.unserialize(ctx, response_header);
 }
@@ -236,7 +236,7 @@ opc_ua::ApplicationDescription::ApplicationDescription(ApplicationType app_type)
 {
 }
 
-void opc_ua::ApplicationDescription::serialize(SerializationContext& ctx, Serializer& s) const
+void opc_ua::ApplicationDescription::serialize(WritableSerializationBuffer& ctx, Serializer& s) const
 {
 	s.serialize(ctx, application_uri);
 	s.serialize(ctx, product_uri);
@@ -247,7 +247,7 @@ void opc_ua::ApplicationDescription::serialize(SerializationContext& ctx, Serial
 	s.serialize(ctx, ArraySerialization<String>(discovery_urls));
 }
 
-void opc_ua::ApplicationDescription::unserialize(SerializationContext& ctx, Serializer& s)
+void opc_ua::ApplicationDescription::unserialize(ReadableSerializationBuffer& ctx, Serializer& s)
 {
 	UInt32 app_type;
 
@@ -274,7 +274,7 @@ opc_ua::CreateSessionRequest::CreateSessionRequest(ApplicationType app_type, Str
 {
 }
 
-void opc_ua::CreateSessionRequest::serialize(SerializationContext& ctx, Serializer& s) const
+void opc_ua::CreateSessionRequest::serialize(WritableSerializationBuffer& ctx, Serializer& s) const
 {
 	s.serialize(ctx, request_header);
 	s.serialize(ctx, client_description);
@@ -287,7 +287,7 @@ void opc_ua::CreateSessionRequest::serialize(SerializationContext& ctx, Serializ
 	s.serialize(ctx, max_response_message_size);
 }
 
-void opc_ua::CreateSessionRequest::unserialize(SerializationContext& ctx, Serializer& s)
+void opc_ua::CreateSessionRequest::unserialize(ReadableSerializationBuffer& ctx, Serializer& s)
 {
 	s.unserialize(ctx, request_header);
 	s.unserialize(ctx, client_description);
@@ -306,7 +306,7 @@ opc_ua::UserTokenPolicy::UserTokenPolicy()
 {
 }
 
-void opc_ua::UserTokenPolicy::serialize(SerializationContext& ctx, Serializer& s) const
+void opc_ua::UserTokenPolicy::serialize(WritableSerializationBuffer& ctx, Serializer& s) const
 {
 	s.serialize(ctx, policy_id);
 	s.serialize(ctx, static_cast<UInt32>(token_type));
@@ -315,7 +315,7 @@ void opc_ua::UserTokenPolicy::serialize(SerializationContext& ctx, Serializer& s
 	s.serialize(ctx, security_policy_uri);
 }
 
-void opc_ua::UserTokenPolicy::unserialize(SerializationContext& ctx, Serializer& s)
+void opc_ua::UserTokenPolicy::unserialize(ReadableSerializationBuffer& ctx, Serializer& s)
 {
 	UInt32 token_type_i;
 
@@ -335,7 +335,7 @@ opc_ua::EndpointDescription::EndpointDescription()
 {
 }
 
-void opc_ua::EndpointDescription::serialize(SerializationContext& ctx, Serializer& s) const
+void opc_ua::EndpointDescription::serialize(WritableSerializationBuffer& ctx, Serializer& s) const
 {
 	s.serialize(ctx, endpoint_url);
 	s.serialize(ctx, server);
@@ -347,7 +347,7 @@ void opc_ua::EndpointDescription::serialize(SerializationContext& ctx, Serialize
 	s.serialize(ctx, security_level);
 }
 
-void opc_ua::EndpointDescription::unserialize(SerializationContext& ctx, Serializer& s)
+void opc_ua::EndpointDescription::unserialize(ReadableSerializationBuffer& ctx, Serializer& s)
 {
 	UInt32 security_mode_i;
 
@@ -368,13 +368,13 @@ opc_ua::SignedSoftwareCertificate::SignedSoftwareCertificate()
 {
 }
 
-void opc_ua::SignedSoftwareCertificate::serialize(SerializationContext& ctx, Serializer& s) const
+void opc_ua::SignedSoftwareCertificate::serialize(WritableSerializationBuffer& ctx, Serializer& s) const
 {
 	s.serialize(ctx, certificate_data);
 	s.serialize(ctx, signature);
 }
 
-void opc_ua::SignedSoftwareCertificate::unserialize(SerializationContext& ctx, Serializer& s)
+void opc_ua::SignedSoftwareCertificate::unserialize(ReadableSerializationBuffer& ctx, Serializer& s)
 {
 	s.unserialize(ctx, certificate_data);
 	s.unserialize(ctx, signature);
@@ -385,13 +385,13 @@ opc_ua::SignatureData::SignatureData()
 {
 }
 
-void opc_ua::SignatureData::serialize(SerializationContext& ctx, Serializer& s) const
+void opc_ua::SignatureData::serialize(WritableSerializationBuffer& ctx, Serializer& s) const
 {
 	s.serialize(ctx, algorithm);
 	s.serialize(ctx, signature);
 }
 
-void opc_ua::SignatureData::unserialize(SerializationContext& ctx, Serializer& s)
+void opc_ua::SignatureData::unserialize(ReadableSerializationBuffer& ctx, Serializer& s)
 {
 	s.unserialize(ctx, algorithm);
 	s.unserialize(ctx, signature);
@@ -405,7 +405,7 @@ opc_ua::CreateSessionResponse::CreateSessionResponse()
 {
 }
 
-void opc_ua::CreateSessionResponse::serialize(SerializationContext& ctx, Serializer& s) const
+void opc_ua::CreateSessionResponse::serialize(WritableSerializationBuffer& ctx, Serializer& s) const
 {
 	s.serialize(ctx, response_header);
 	s.serialize(ctx, session_id);
@@ -419,7 +419,7 @@ void opc_ua::CreateSessionResponse::serialize(SerializationContext& ctx, Seriali
 	s.serialize(ctx, max_request_message_size);
 }
 
-void opc_ua::CreateSessionResponse::unserialize(SerializationContext& ctx, Serializer& s)
+void opc_ua::CreateSessionResponse::unserialize(ReadableSerializationBuffer& ctx, Serializer& s)
 {
 	s.unserialize(ctx, response_header);
 	s.unserialize(ctx, session_id);
@@ -439,7 +439,7 @@ opc_ua::ActivateSessionRequest::ActivateSessionRequest()
 {
 }
 
-void opc_ua::ActivateSessionRequest::serialize(SerializationContext& ctx, Serializer& s) const
+void opc_ua::ActivateSessionRequest::serialize(WritableSerializationBuffer& ctx, Serializer& s) const
 {
 	s.serialize(ctx, request_header);
 	s.serialize(ctx, client_signature);
@@ -449,7 +449,7 @@ void opc_ua::ActivateSessionRequest::serialize(SerializationContext& ctx, Serial
 	s.serialize(ctx, user_token_signature);
 }
 
-void opc_ua::ActivateSessionRequest::unserialize(SerializationContext& ctx, Serializer& s)
+void opc_ua::ActivateSessionRequest::unserialize(ReadableSerializationBuffer& ctx, Serializer& s)
 {
 	s.unserialize(ctx, request_header);
 	s.unserialize(ctx, client_signature);
@@ -464,7 +464,7 @@ opc_ua::ActivateSessionResponse::ActivateSessionResponse()
 {
 }
 
-void opc_ua::ActivateSessionResponse::serialize(SerializationContext& ctx, Serializer& s) const
+void opc_ua::ActivateSessionResponse::serialize(WritableSerializationBuffer& ctx, Serializer& s) const
 {
 	s.serialize(ctx, response_header);
 	s.serialize(ctx, server_nonce);
@@ -472,7 +472,7 @@ void opc_ua::ActivateSessionResponse::serialize(SerializationContext& ctx, Seria
 	s.serialize(ctx, ArraySerialization<DiagnosticInfo>(diagnostic_infos));
 }
 
-void opc_ua::ActivateSessionResponse::unserialize(SerializationContext& ctx, Serializer& s)
+void opc_ua::ActivateSessionResponse::unserialize(ReadableSerializationBuffer& ctx, Serializer& s)
 {
 	s.unserialize(ctx, response_header);
 	s.unserialize(ctx, server_nonce);
@@ -485,13 +485,13 @@ opc_ua::CloseSessionRequest::CloseSessionRequest(Boolean del_subscriptions)
 {
 }
 
-void opc_ua::CloseSessionRequest::serialize(SerializationContext& ctx, Serializer& s) const
+void opc_ua::CloseSessionRequest::serialize(WritableSerializationBuffer& ctx, Serializer& s) const
 {
 	s.serialize(ctx, request_header);
 	s.serialize(ctx, delete_subscriptions);
 }
 
-void opc_ua::CloseSessionRequest::unserialize(SerializationContext& ctx, Serializer& s)
+void opc_ua::CloseSessionRequest::unserialize(ReadableSerializationBuffer& ctx, Serializer& s)
 {
 	s.unserialize(ctx, request_header);
 	s.unserialize(ctx, delete_subscriptions);
@@ -501,12 +501,12 @@ opc_ua::CloseSessionResponse::CloseSessionResponse()
 {
 }
 
-void opc_ua::CloseSessionResponse::serialize(SerializationContext& ctx, Serializer& s) const
+void opc_ua::CloseSessionResponse::serialize(WritableSerializationBuffer& ctx, Serializer& s) const
 {
 	s.serialize(ctx, response_header);
 }
 
-void opc_ua::CloseSessionResponse::unserialize(SerializationContext& ctx, Serializer& s)
+void opc_ua::CloseSessionResponse::unserialize(ReadableSerializationBuffer& ctx, Serializer& s)
 {
 	s.unserialize(ctx, response_header);
 }
@@ -516,13 +516,13 @@ opc_ua::QualifiedName::QualifiedName(UInt16 ns_index, CharArray new_name)
 {
 }
 
-void opc_ua::QualifiedName::serialize(SerializationContext& ctx, Serializer& s) const
+void opc_ua::QualifiedName::serialize(WritableSerializationBuffer& ctx, Serializer& s) const
 {
 	s.serialize(ctx, namespace_index);
 	s.serialize(ctx, name);
 }
 
-void opc_ua::QualifiedName::unserialize(SerializationContext& ctx, Serializer& s)
+void opc_ua::QualifiedName::unserialize(ReadableSerializationBuffer& ctx, Serializer& s)
 {
 	s.unserialize(ctx, namespace_index);
 	s.unserialize(ctx, name);
@@ -533,7 +533,7 @@ opc_ua::RelativePathElement::RelativePathElement(NodeId ref_type, Boolean is_inv
 {
 }
 
-void opc_ua::RelativePathElement::serialize(SerializationContext& ctx, Serializer& s) const
+void opc_ua::RelativePathElement::serialize(WritableSerializationBuffer& ctx, Serializer& s) const
 {
 	s.serialize(ctx, reference_type_id);
 	s.serialize(ctx, is_inverse);
@@ -541,7 +541,7 @@ void opc_ua::RelativePathElement::serialize(SerializationContext& ctx, Serialize
 	s.serialize(ctx, target_name);
 }
 
-void opc_ua::RelativePathElement::unserialize(SerializationContext& ctx, Serializer& s)
+void opc_ua::RelativePathElement::unserialize(ReadableSerializationBuffer& ctx, Serializer& s)
 {
 	s.unserialize(ctx, reference_type_id);
 	s.unserialize(ctx, is_inverse);
@@ -554,12 +554,12 @@ opc_ua::RelativePath::RelativePath(Array<RelativePathElement> new_elements)
 {
 }
 
-void opc_ua::RelativePath::serialize(SerializationContext& ctx, Serializer& s) const
+void opc_ua::RelativePath::serialize(WritableSerializationBuffer& ctx, Serializer& s) const
 {
 	s.serialize(ctx, ArraySerialization<RelativePathElement>(elements));
 }
 
-void opc_ua::RelativePath::unserialize(SerializationContext& ctx, Serializer& s)
+void opc_ua::RelativePath::unserialize(ReadableSerializationBuffer& ctx, Serializer& s)
 {
 	s.unserialize(ctx, ArrayUnserialization<RelativePathElement>(elements));
 }
@@ -569,13 +569,13 @@ opc_ua::BrowsePath::BrowsePath(NodeId start, RelativePath path)
 {
 }
 
-void opc_ua::BrowsePath::serialize(SerializationContext& ctx, Serializer& s) const
+void opc_ua::BrowsePath::serialize(WritableSerializationBuffer& ctx, Serializer& s) const
 {
 	s.serialize(ctx, starting_node);
 	s.serialize(ctx, relative_path);
 }
 
-void opc_ua::BrowsePath::unserialize(SerializationContext& ctx, Serializer& s)
+void opc_ua::BrowsePath::unserialize(ReadableSerializationBuffer& ctx, Serializer& s)
 {
 	s.unserialize(ctx, starting_node);
 	s.unserialize(ctx, relative_path);
@@ -586,13 +586,13 @@ opc_ua::TranslateBrowsePathsToNodeIdsRequest::TranslateBrowsePathsToNodeIdsReque
 {
 }
 
-void opc_ua::TranslateBrowsePathsToNodeIdsRequest::serialize(SerializationContext& ctx, Serializer& s) const
+void opc_ua::TranslateBrowsePathsToNodeIdsRequest::serialize(WritableSerializationBuffer& ctx, Serializer& s) const
 {
 	s.serialize(ctx, request_header);
 	s.serialize(ctx, ArraySerialization<BrowsePath>(browse_paths));
 }
 
-void opc_ua::TranslateBrowsePathsToNodeIdsRequest::unserialize(SerializationContext& ctx, Serializer& s)
+void opc_ua::TranslateBrowsePathsToNodeIdsRequest::unserialize(ReadableSerializationBuffer& ctx, Serializer& s)
 {
 	s.unserialize(ctx, request_header);
 	s.unserialize(ctx, ArrayUnserialization<BrowsePath>(browse_paths));
@@ -603,7 +603,7 @@ opc_ua::ReadValueId::ReadValueId()
 {
 }
 
-void opc_ua::ReadValueId::serialize(SerializationContext& ctx, Serializer& s) const
+void opc_ua::ReadValueId::serialize(WritableSerializationBuffer& ctx, Serializer& s) const
 {
 	s.serialize(ctx, node_id);
 	s.serialize(ctx, attribute_id);
@@ -611,7 +611,7 @@ void opc_ua::ReadValueId::serialize(SerializationContext& ctx, Serializer& s) co
 	s.serialize(ctx, data_encoding);
 }
 
-void opc_ua::ReadValueId::unserialize(SerializationContext& ctx, Serializer& s)
+void opc_ua::ReadValueId::unserialize(ReadableSerializationBuffer& ctx, Serializer& s)
 {
 	s.unserialize(ctx, node_id);
 	s.unserialize(ctx, attribute_id);
@@ -624,7 +624,7 @@ opc_ua::ReadRequest::ReadRequest()
 {
 }
 
-void opc_ua::ReadRequest::serialize(SerializationContext& ctx, Serializer& s) const
+void opc_ua::ReadRequest::serialize(WritableSerializationBuffer& ctx, Serializer& s) const
 {
 	s.serialize(ctx, request_header);
 	s.serialize(ctx, max_age);
@@ -632,7 +632,7 @@ void opc_ua::ReadRequest::serialize(SerializationContext& ctx, Serializer& s) co
 	s.serialize(ctx, ArraySerialization<ReadValueId>(nodes_to_read));
 }
 
-void opc_ua::ReadRequest::unserialize(SerializationContext& ctx, Serializer& s)
+void opc_ua::ReadRequest::unserialize(ReadableSerializationBuffer& ctx, Serializer& s)
 {
 	UInt32 timestamps_to_return_i;
 
@@ -649,7 +649,7 @@ opc_ua::DataValue::DataValue()
 {
 }
 
-void opc_ua::DataValue::serialize(SerializationContext& ctx, Serializer& s) const
+void opc_ua::DataValue::serialize(WritableSerializationBuffer& ctx, Serializer& s) const
 {
 	s.serialize(ctx, flags);
 	if (flags & static_cast<Byte>(DataValueFlags::VALUE_SPECIFIED))
@@ -666,7 +666,7 @@ void opc_ua::DataValue::serialize(SerializationContext& ctx, Serializer& s) cons
 		s.serialize(ctx, server_picoseconds);
 }
 
-void opc_ua::DataValue::unserialize(SerializationContext& ctx, Serializer& s)
+void opc_ua::DataValue::unserialize(ReadableSerializationBuffer& ctx, Serializer& s)
 {
 	s.unserialize(ctx, flags);
 	if (flags & static_cast<Byte>(DataValueFlags::VALUE_SPECIFIED))
@@ -688,14 +688,14 @@ opc_ua::ReadResponse::ReadResponse()
 {
 }
 
-void opc_ua::ReadResponse::serialize(SerializationContext& ctx, Serializer& s) const
+void opc_ua::ReadResponse::serialize(WritableSerializationBuffer& ctx, Serializer& s) const
 {
 	s.serialize(ctx, response_header);
 	s.serialize(ctx, ArraySerialization<DataValue>(results));
 	s.serialize(ctx, ArraySerialization<DiagnosticInfo>(diagnostic_infos));
 }
 
-void opc_ua::ReadResponse::unserialize(SerializationContext& ctx, Serializer& s)
+void opc_ua::ReadResponse::unserialize(ReadableSerializationBuffer& ctx, Serializer& s)
 {
 	s.unserialize(ctx, response_header);
 	s.unserialize(ctx, ArrayUnserialization<DataValue>(results));
@@ -707,12 +707,12 @@ opc_ua::UserIdentityToken::UserIdentityToken(String new_policy_id)
 {
 }
 
-void opc_ua::UserIdentityToken::serialize(SerializationContext& ctx, Serializer& s) const
+void opc_ua::UserIdentityToken::serialize(WritableSerializationBuffer& ctx, Serializer& s) const
 {
 	s.serialize(ctx, policy_id);
 }
 
-void opc_ua::UserIdentityToken::unserialize(SerializationContext& ctx, Serializer& s)
+void opc_ua::UserIdentityToken::unserialize(ReadableSerializationBuffer& ctx, Serializer& s)
 {
 	s.unserialize(ctx, policy_id);
 }

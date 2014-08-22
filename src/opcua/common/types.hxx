@@ -97,8 +97,8 @@ namespace opc_ua
 	// An abstract structure needing serialization function.
 	struct Struct
 	{
-		virtual void serialize(SerializationContext& ctx, Serializer& s) const = 0;
-		virtual void unserialize(SerializationContext& ctx, Serializer& s) = 0;
+		virtual void serialize(WritableSerializationBuffer& ctx, Serializer& s) const = 0;
+		virtual void unserialize(ReadableSerializationBuffer& ctx, Serializer& s) = 0;
 		virtual UInt32 get_node_id() const = 0;
 	};
 
@@ -173,7 +173,7 @@ namespace opc_ua
 	{
 	public:
 		virtual size_t size() const = 0;
-		virtual void serialize_all(SerializationContext& ctx, Serializer& s) const = 0;
+		virtual void serialize_all(WritableSerializationBuffer& ctx, Serializer& s) const = 0;
 	};
 
 	template <class T>
@@ -184,14 +184,14 @@ namespace opc_ua
 	public:
 		ArraySerialization(const Array<T>& array);
 		virtual size_t size() const;
-		virtual void serialize_all(SerializationContext& ctx, Serializer& s) const;
+		virtual void serialize_all(WritableSerializationBuffer& ctx, Serializer& s) const;
 	};
 
 	class AbstractArrayUnserialization
 	{
 	public:
 		virtual void clear() const = 0;
-		virtual void unserialize_n(SerializationContext& ctx, Serializer& s, size_t count) const = 0;
+		virtual void unserialize_n(ReadableSerializationBuffer& ctx, Serializer& s, size_t count) const = 0;
 	};
 
 	template <class T>
@@ -202,45 +202,45 @@ namespace opc_ua
 	public:
 		ArrayUnserialization(Array<T>& array);
 		virtual void clear() const;
-		virtual void unserialize_n(SerializationContext& ctx, Serializer& s, size_t count) const;
+		virtual void unserialize_n(ReadableSerializationBuffer& ctx, Serializer& s, size_t count) const;
 	};
 
 	// Abstract class defining serializations for known data types.
 	struct Serializer
 	{
-		virtual void serialize(SerializationContext& ctx, Boolean b) = 0;
-		virtual void serialize(SerializationContext& ctx, Byte i) = 0;
-		virtual void serialize(SerializationContext& ctx, UInt16 i) = 0;
-		virtual void serialize(SerializationContext& ctx, UInt32 i) = 0;
-		virtual void serialize(SerializationContext& ctx, Int32 i) = 0;
-		virtual void serialize(SerializationContext& ctx, Int64 i) = 0;
-		virtual void serialize(SerializationContext& ctx, Double f) = 0;
-		virtual void serialize(SerializationContext& ctx, const String& s) = 0;
-		virtual void serialize(SerializationContext& ctx, DateTime t) = 0;
-		virtual void serialize(SerializationContext& ctx, const LocalizedText& s) = 0;
-		virtual void serialize(SerializationContext& ctx, const GUID& g) = 0;
-		virtual void serialize(SerializationContext& ctx, const NodeId& n) = 0;
-		virtual void serialize(SerializationContext& ctx, const Struct& s) = 0;
-		virtual void serialize(SerializationContext& ctx, const ExtensionObject& s) = 0;
-		virtual void serialize(SerializationContext& ctx, const Variant& v) = 0;
-		virtual void serialize(SerializationContext& ctx, const AbstractArraySerialization& a) = 0;
+		virtual void serialize(WritableSerializationBuffer& ctx, Boolean b) = 0;
+		virtual void serialize(WritableSerializationBuffer& ctx, Byte i) = 0;
+		virtual void serialize(WritableSerializationBuffer& ctx, UInt16 i) = 0;
+		virtual void serialize(WritableSerializationBuffer& ctx, UInt32 i) = 0;
+		virtual void serialize(WritableSerializationBuffer& ctx, Int32 i) = 0;
+		virtual void serialize(WritableSerializationBuffer& ctx, Int64 i) = 0;
+		virtual void serialize(WritableSerializationBuffer& ctx, Double f) = 0;
+		virtual void serialize(WritableSerializationBuffer& ctx, const String& s) = 0;
+		virtual void serialize(WritableSerializationBuffer& ctx, DateTime t) = 0;
+		virtual void serialize(WritableSerializationBuffer& ctx, const LocalizedText& s) = 0;
+		virtual void serialize(WritableSerializationBuffer& ctx, const GUID& g) = 0;
+		virtual void serialize(WritableSerializationBuffer& ctx, const NodeId& n) = 0;
+		virtual void serialize(WritableSerializationBuffer& ctx, const Struct& s) = 0;
+		virtual void serialize(WritableSerializationBuffer& ctx, const ExtensionObject& s) = 0;
+		virtual void serialize(WritableSerializationBuffer& ctx, const Variant& v) = 0;
+		virtual void serialize(WritableSerializationBuffer& ctx, const AbstractArraySerialization& a) = 0;
 
-		virtual void unserialize(SerializationContext& ctx, Boolean& b) = 0;
-		virtual void unserialize(SerializationContext& ctx, Byte& i) = 0;
-		virtual void unserialize(SerializationContext& ctx, UInt16& i) = 0;
-		virtual void unserialize(SerializationContext& ctx, Int32& i) = 0;
-		virtual void unserialize(SerializationContext& ctx, UInt32& i) = 0;
-		virtual void unserialize(SerializationContext& ctx, Int64& i) = 0;
-		virtual void unserialize(SerializationContext& ctx, Double& f) = 0;
-		virtual void unserialize(SerializationContext& ctx, String& s) = 0;
-		virtual void unserialize(SerializationContext& ctx, LocalizedText& s) = 0;
-		virtual void unserialize(SerializationContext& ctx, DateTime& t) = 0;
-		virtual void unserialize(SerializationContext& ctx, GUID& g) = 0;
-		virtual void unserialize(SerializationContext& ctx, NodeId& n) = 0;
-		virtual void unserialize(SerializationContext& ctx, Struct& s) = 0;
-		virtual void unserialize(SerializationContext& ctx, ExtensionObject& s) = 0;
-		virtual void unserialize(SerializationContext& ctx, Variant& v) = 0;
-		virtual void unserialize(SerializationContext& ctx, const AbstractArrayUnserialization& a) = 0;
+		virtual void unserialize(ReadableSerializationBuffer& ctx, Boolean& b) = 0;
+		virtual void unserialize(ReadableSerializationBuffer& ctx, Byte& i) = 0;
+		virtual void unserialize(ReadableSerializationBuffer& ctx, UInt16& i) = 0;
+		virtual void unserialize(ReadableSerializationBuffer& ctx, Int32& i) = 0;
+		virtual void unserialize(ReadableSerializationBuffer& ctx, UInt32& i) = 0;
+		virtual void unserialize(ReadableSerializationBuffer& ctx, Int64& i) = 0;
+		virtual void unserialize(ReadableSerializationBuffer& ctx, Double& f) = 0;
+		virtual void unserialize(ReadableSerializationBuffer& ctx, String& s) = 0;
+		virtual void unserialize(ReadableSerializationBuffer& ctx, LocalizedText& s) = 0;
+		virtual void unserialize(ReadableSerializationBuffer& ctx, DateTime& t) = 0;
+		virtual void unserialize(ReadableSerializationBuffer& ctx, GUID& g) = 0;
+		virtual void unserialize(ReadableSerializationBuffer& ctx, NodeId& n) = 0;
+		virtual void unserialize(ReadableSerializationBuffer& ctx, Struct& s) = 0;
+		virtual void unserialize(ReadableSerializationBuffer& ctx, ExtensionObject& s) = 0;
+		virtual void unserialize(ReadableSerializationBuffer& ctx, Variant& v) = 0;
+		virtual void unserialize(ReadableSerializationBuffer& ctx, const AbstractArrayUnserialization& a) = 0;
 	};
 
 	// serializer implementation
@@ -257,7 +257,7 @@ namespace opc_ua
 	}
 
 	template <class T>
-	void ArraySerialization<T>::serialize_all(SerializationContext& ctx, Serializer& s) const
+	void ArraySerialization<T>::serialize_all(WritableSerializationBuffer& ctx, Serializer& s) const
 	{
 		for (const T& i : _array)
 			s.serialize(ctx, i);
@@ -277,7 +277,7 @@ namespace opc_ua
 	}
 
 	template <class T>
-	void ArrayUnserialization<T>::unserialize_n(SerializationContext& ctx, Serializer& s, size_t count) const
+	void ArrayUnserialization<T>::unserialize_n(ReadableSerializationBuffer& ctx, Serializer& s, size_t count) const
 	{
 		_array.resize(count);
 

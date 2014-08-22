@@ -9,57 +9,76 @@
 
 #include "util.hxx"
 
+#include <cassert>
 #include <stdexcept>
 
-opc_ua::SerializationContext::SerializationContext(evbuffer* buf)
-	: _buf(buf)
+opc_ua::SerializationBuffer::SerializationBuffer()
 {
 }
 
-size_t opc_ua::SerializationContext::size()
+opc_ua::SerializationBuffer::SerializationBuffer(evbuffer* new_buf)
+	: buf(new_buf)
 {
-	return evbuffer_get_length(_buf);
+	assert(new_buf);
 }
 
-void opc_ua::SerializationContext::read(void* data, size_t size)
+size_t opc_ua::SerializationBuffer::size() const
 {
-	size_t rd = evbuffer_remove(_buf, data, size);
-
-	if (rd < size)
-		throw std::runtime_error("Failure draining the buffer");
+	return evbuffer_get_length(buf);
 }
 
-void opc_ua::SerializationContext::write(const void* data, size_t size)
+opc_ua::ReadableSerializationBuffer::ReadableSerializationBuffer(evbuffer* new_buf)
+	: SerializationBuffer(new_buf)
 {
-	if (evbuffer_add(_buf, data, size) == -1)
+}
+
+opc_ua::ReadableSerializationBuffer::ReadableSerializationBuffer()
+{
+}
+
+void opc_ua::ReadableSerializationBuffer::read(void* data, size_t length)
+{
+	ssize_t rd = evbuffer_remove(buf, data, length);
+
+	if (rd < length)
+		throw std::runtime_error("Short read when draining the buffer");
+}
+
+opc_ua::WritableSerializationBuffer::WritableSerializationBuffer(evbuffer* new_buf)
+	: SerializationBuffer(new_buf)
+{
+}
+
+opc_ua::WritableSerializationBuffer::WritableSerializationBuffer()
+{
+}
+
+void opc_ua::WritableSerializationBuffer::write(const void* data, size_t length)
+{
+	if (evbuffer_add(buf, data, length) == -1)
 		throw std::runtime_error("Failure appending to buffer");
 }
 
-void opc_ua::SerializationContext::write(const SerializationContext& ctx)
+void opc_ua::WritableSerializationBuffer::move(ReadableSerializationBuffer& other)
 {
-	if (evbuffer_add_buffer(_buf, ctx._buf) == -1)
-		throw std::runtime_error("Failure appending to buffer");
+	if (evbuffer_add_buffer(buf, other.buf) == -1)
+		throw std::runtime_error("Failure moving buffers");
 }
 
-void opc_ua::SerializationContext::move(SerializationContext& orig, size_t length)
+void opc_ua::WritableSerializationBuffer::move(ReadableSerializationBuffer& other, size_t length)
 {
-	if (evbuffer_remove_buffer(orig._buf, _buf, length) < length)
-		throw std::runtime_error("Buffer move failed");
+	ssize_t rd = evbuffer_remove_buffer(other.buf, buf, length);
+
+	if (rd < length)
+		throw std::runtime_error("Short read when moving the buffer");
 }
 
-opc_ua::TemporarySerializationContext::TemporarySerializationContext()
-	: SerializationContext(evbuffer_new())
+opc_ua::MemorySerializationBuffer::MemorySerializationBuffer()
+	: SerializationBuffer(evbuffer_new())
 {
-	if (!_buf)
-		throw std::runtime_error("Buffer allocation failed");
 }
 
-opc_ua::TemporarySerializationContext::~TemporarySerializationContext()
+opc_ua::MemorySerializationBuffer::~MemorySerializationBuffer()
 {
-	evbuffer_free(_buf);
-}
-
-void opc_ua::TemporarySerializationContext::clear()
-{
-	evbuffer_drain(_buf, size());
+	evbuffer_free(buf);
 }

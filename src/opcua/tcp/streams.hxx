@@ -36,7 +36,8 @@ namespace opc_ua
 		class TransportStream
 		{
 			bufferevent* bev;
-			SerializationContext in_ctx, out_ctx;
+			ReadableSerializationBuffer in_ctx;
+			WritableSerializationBuffer out_ctx;
 
 			// current state
 			bool connected;
@@ -58,7 +59,7 @@ namespace opc_ua
 			~TransportStream();
 
 			void connect_hostname(const char* hostname, uint16_t port, const std::string& endpoint, sa_family_t family = AF_UNSPEC);
-			void write_message(MessageType msg_type, MessageIsFinal is_final, SerializationContext& msg, UInt32 secure_channel_id = 0);
+			void write_message(MessageType msg_type, MessageIsFinal is_final, ReadableSerializationBuffer& msg, UInt32 secure_channel_id = 0);
 
 			// Queue a request for secure channel.
 			void add_secure_channel(MessageStream& ms);
@@ -95,11 +96,11 @@ namespace opc_ua
 			void request_secure_channel();
 			// process secure channel response
 			// return true if it matches our request
-			bool process_secure_channel_response(SerializationContext& buf, UInt32 channel_id);
+			bool process_secure_channel_response(ReadableSerializationBuffer& buf, UInt32 channel_id);
 			// request closing secure channel
 			void close();
 			// handle incoming message.
-			void handle_message(MessageHeader& h, SerializationContext& body);
+			void handle_message(MessageHeader& h, ReadableSerializationBuffer& body);
 
 			// Attach a new session stream.
 			void attach_session(SessionStream& s);

@@ -35,8 +35,8 @@ namespace opc_ua
 		RequestHeader();
 
 		// metadata
-		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
-		virtual void unserialize(SerializationContext& ctx, Serializer& s);
+		virtual void serialize(WritableSerializationBuffer& ctx, Serializer& s) const;
+		virtual void unserialize(ReadableSerializationBuffer& ctx, Serializer& s);
 		virtual UInt32 get_node_id() const { return NODE_ID; }
 	};
 
@@ -59,8 +59,8 @@ namespace opc_ua
 		DiagnosticInfo();
 
 		// metadata
-		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
-		virtual void unserialize(SerializationContext& ctx, Serializer& s);
+		virtual void serialize(WritableSerializationBuffer& ctx, Serializer& s) const;
+		virtual void unserialize(ReadableSerializationBuffer& ctx, Serializer& s);
 		virtual UInt32 get_node_id() const { return NODE_ID; }
 	};
 
@@ -78,8 +78,8 @@ namespace opc_ua
 		ResponseHeader();
 
 		// metadata
-		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
-		virtual void unserialize(SerializationContext& ctx, Serializer& s);
+		virtual void serialize(WritableSerializationBuffer& ctx, Serializer& s) const;
+		virtual void unserialize(ReadableSerializationBuffer& ctx, Serializer& s);
 		virtual UInt32 get_node_id() const { return NODE_ID; }
 	};
 
@@ -115,8 +115,8 @@ namespace opc_ua
 		OpenSecureChannelRequest(SecurityTokenRequestType req_type = SecurityTokenRequestType::ISSUE, MessageSecurityMode req_mode = MessageSecurityMode::NONE, ByteString req_nonce = "", UInt32 req_lifetime = 0);
 
 		// metadata
-		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
-		virtual void unserialize(SerializationContext& ctx, Serializer& s);
+		virtual void serialize(WritableSerializationBuffer& ctx, Serializer& s) const;
+		virtual void unserialize(ReadableSerializationBuffer& ctx, Serializer& s);
 		virtual UInt32 get_node_id() const { return NODE_ID; }
 	};
 
@@ -132,8 +132,8 @@ namespace opc_ua
 		ChannelSecurityToken();
 
 		// metadata
-		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
-		virtual void unserialize(SerializationContext& ctx, Serializer& s);
+		virtual void serialize(WritableSerializationBuffer& ctx, Serializer& s) const;
+		virtual void unserialize(ReadableSerializationBuffer& ctx, Serializer& s);
 		virtual UInt32 get_node_id() const { return NODE_ID; }
 	};
 
@@ -147,8 +147,8 @@ namespace opc_ua
 
 		OpenSecureChannelResponse();
 		// metadata
-		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
-		virtual void unserialize(SerializationContext& ctx, Serializer& s);
+		virtual void serialize(WritableSerializationBuffer& ctx, Serializer& s) const;
+		virtual void unserialize(ReadableSerializationBuffer& ctx, Serializer& s);
 		virtual UInt32 get_node_id() const { return NODE_ID; }
 	};
 
@@ -159,8 +159,8 @@ namespace opc_ua
 		CloseSecureChannelRequest();
 
 		// metadata
-		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
-		virtual void unserialize(SerializationContext& ctx, Serializer& s);
+		virtual void serialize(WritableSerializationBuffer& ctx, Serializer& s) const;
+		virtual void unserialize(ReadableSerializationBuffer& ctx, Serializer& s);
 		virtual UInt32 get_node_id() const { return NODE_ID; }
 	};
 
@@ -171,8 +171,8 @@ namespace opc_ua
 		CloseSecureChannelResponse();
 
 		// metadata
-		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
-		virtual void unserialize(SerializationContext& ctx, Serializer& s);
+		virtual void serialize(WritableSerializationBuffer& ctx, Serializer& s) const;
+		virtual void unserialize(ReadableSerializationBuffer& ctx, Serializer& s);
 		virtual UInt32 get_node_id() const { return NODE_ID; }
 	};
 
@@ -199,8 +199,8 @@ namespace opc_ua
 		ApplicationDescription(ApplicationType app_type = ApplicationType::SERVER);
 
 		// metadata
-		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
-		virtual void unserialize(SerializationContext& ctx, Serializer& s);
+		virtual void serialize(WritableSerializationBuffer& ctx, Serializer& s) const;
+		virtual void unserialize(ReadableSerializationBuffer& ctx, Serializer& s);
 		virtual UInt32 get_node_id() const { return NODE_ID; }
 	};
 
@@ -220,8 +220,8 @@ namespace opc_ua
 		CreateSessionRequest(ApplicationType app_type = ApplicationType::SERVER, String endpoint = "", String session = "", String nonce = "", Double session_timeout = 0);
 
 		// metadata
-		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
-		virtual void unserialize(SerializationContext& ctx, Serializer& s);
+		virtual void serialize(WritableSerializationBuffer& ctx, Serializer& s) const;
+		virtual void unserialize(ReadableSerializationBuffer& ctx, Serializer& s);
 		virtual UInt32 get_node_id() const { return NODE_ID; }
 	};
 
@@ -246,8 +246,8 @@ namespace opc_ua
 		UserTokenPolicy();
 
 		// metadata
-		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
-		virtual void unserialize(SerializationContext& ctx, Serializer& s);
+		virtual void serialize(WritableSerializationBuffer& ctx, Serializer& s) const;
+		virtual void unserialize(ReadableSerializationBuffer& ctx, Serializer& s);
 		virtual UInt32 get_node_id() const { return NODE_ID; }
 	};
 
@@ -267,8 +267,8 @@ namespace opc_ua
 		EndpointDescription();
 
 		// metadata
-		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
-		virtual void unserialize(SerializationContext& ctx, Serializer& s);
+		virtual void serialize(WritableSerializationBuffer& ctx, Serializer& s) const;
+		virtual void unserialize(ReadableSerializationBuffer& ctx, Serializer& s);
 		virtual UInt32 get_node_id() const { return NODE_ID; }
 	};
 
@@ -282,8 +282,8 @@ namespace opc_ua
 		SignedSoftwareCertificate();
 
 		// metadata
-		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
-		virtual void unserialize(SerializationContext& ctx, Serializer& s);
+		virtual void serialize(WritableSerializationBuffer& ctx, Serializer& s) const;
+		virtual void unserialize(ReadableSerializationBuffer& ctx, Serializer& s);
 		virtual UInt32 get_node_id() const { return NODE_ID; }
 	};
 
@@ -297,8 +297,8 @@ namespace opc_ua
 		SignatureData();
 
 		// metadata
-		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
-		virtual void unserialize(SerializationContext& ctx, Serializer& s);
+		virtual void serialize(WritableSerializationBuffer& ctx, Serializer& s) const;
+		virtual void unserialize(ReadableSerializationBuffer& ctx, Serializer& s);
 		virtual UInt32 get_node_id() const { return NODE_ID; }
 	};
 
@@ -319,8 +319,8 @@ namespace opc_ua
 		CreateSessionResponse();
 
 		// metadata
-		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
-		virtual void unserialize(SerializationContext& ctx, Serializer& s);
+		virtual void serialize(WritableSerializationBuffer& ctx, Serializer& s) const;
+		virtual void unserialize(ReadableSerializationBuffer& ctx, Serializer& s);
 		virtual UInt32 get_node_id() const { return NODE_ID; }
 	};
 
@@ -337,8 +337,8 @@ namespace opc_ua
 		ActivateSessionRequest();
 
 		// metadata
-		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
-		virtual void unserialize(SerializationContext& ctx, Serializer& s);
+		virtual void serialize(WritableSerializationBuffer& ctx, Serializer& s) const;
+		virtual void unserialize(ReadableSerializationBuffer& ctx, Serializer& s);
 		virtual UInt32 get_node_id() const { return NODE_ID; }
 	};
 
@@ -353,8 +353,8 @@ namespace opc_ua
 		ActivateSessionResponse();
 
 		// metadata
-		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
-		virtual void unserialize(SerializationContext& ctx, Serializer& s);
+		virtual void serialize(WritableSerializationBuffer& ctx, Serializer& s) const;
+		virtual void unserialize(ReadableSerializationBuffer& ctx, Serializer& s);
 		virtual UInt32 get_node_id() const { return NODE_ID; }
 	};
 
@@ -367,8 +367,8 @@ namespace opc_ua
 		CloseSessionRequest(Boolean del_subscriptions = false);
 
 		// metadata
-		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
-		virtual void unserialize(SerializationContext& ctx, Serializer& s);
+		virtual void serialize(WritableSerializationBuffer& ctx, Serializer& s) const;
+		virtual void unserialize(ReadableSerializationBuffer& ctx, Serializer& s);
 		virtual UInt32 get_node_id() const { return NODE_ID; }
 	};
 
@@ -379,8 +379,8 @@ namespace opc_ua
 		CloseSessionResponse();
 
 		// metadata
-		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
-		virtual void unserialize(SerializationContext& ctx, Serializer& s);
+		virtual void serialize(WritableSerializationBuffer& ctx, Serializer& s) const;
+		virtual void unserialize(ReadableSerializationBuffer& ctx, Serializer& s);
 		virtual UInt32 get_node_id() const { return NODE_ID; }
 	};
 
@@ -394,8 +394,8 @@ namespace opc_ua
 		QualifiedName(UInt16 ns_index = 0, CharArray new_name = "");
 
 		// metadata
-		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
-		virtual void unserialize(SerializationContext& ctx, Serializer& s);
+		virtual void serialize(WritableSerializationBuffer& ctx, Serializer& s) const;
+		virtual void unserialize(ReadableSerializationBuffer& ctx, Serializer& s);
 		virtual UInt32 get_node_id() const { return NODE_ID; }
 	};
 
@@ -411,8 +411,8 @@ namespace opc_ua
 		RelativePathElement(NodeId ref_type = 0, Boolean is_inv = false, Boolean inc_subtypes = false, QualifiedName target = {});
 
 		// metadata
-		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
-		virtual void unserialize(SerializationContext& ctx, Serializer& s);
+		virtual void serialize(WritableSerializationBuffer& ctx, Serializer& s) const;
+		virtual void unserialize(ReadableSerializationBuffer& ctx, Serializer& s);
 		virtual UInt32 get_node_id() const { return NODE_ID; }
 	};
 
@@ -425,8 +425,8 @@ namespace opc_ua
 		RelativePath(Array<RelativePathElement> new_elements = {});
 
 		// metadata
-		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
-		virtual void unserialize(SerializationContext& ctx, Serializer& s);
+		virtual void serialize(WritableSerializationBuffer& ctx, Serializer& s) const;
+		virtual void unserialize(ReadableSerializationBuffer& ctx, Serializer& s);
 		virtual UInt32 get_node_id() const { return NODE_ID; }
 	};
 
@@ -440,8 +440,8 @@ namespace opc_ua
 		BrowsePath(NodeId start = 0, RelativePath path = {});
 
 		// metadata
-		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
-		virtual void unserialize(SerializationContext& ctx, Serializer& s);
+		virtual void serialize(WritableSerializationBuffer& ctx, Serializer& s) const;
+		virtual void unserialize(ReadableSerializationBuffer& ctx, Serializer& s);
 		virtual UInt32 get_node_id() const { return NODE_ID; }
 	};
 
@@ -454,8 +454,8 @@ namespace opc_ua
 		TranslateBrowsePathsToNodeIdsRequest(Array<BrowsePath> paths = {});
 
 		// metadata
-		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
-		virtual void unserialize(SerializationContext& ctx, Serializer& s);
+		virtual void serialize(WritableSerializationBuffer& ctx, Serializer& s) const;
+		virtual void unserialize(ReadableSerializationBuffer& ctx, Serializer& s);
 		virtual UInt32 get_node_id() const { return NODE_ID; }
 	};
 
@@ -479,8 +479,8 @@ namespace opc_ua
 		ReadValueId();
 
 		// metadata
-		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
-		virtual void unserialize(SerializationContext& ctx, Serializer& s);
+		virtual void serialize(WritableSerializationBuffer& ctx, Serializer& s) const;
+		virtual void unserialize(ReadableSerializationBuffer& ctx, Serializer& s);
 		virtual UInt32 get_node_id() const { return NODE_ID; }
 	};
 
@@ -495,8 +495,8 @@ namespace opc_ua
 		ReadRequest();
 
 		// metadata
-		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
-		virtual void unserialize(SerializationContext& ctx, Serializer& s);
+		virtual void serialize(WritableSerializationBuffer& ctx, Serializer& s) const;
+		virtual void unserialize(ReadableSerializationBuffer& ctx, Serializer& s);
 		virtual UInt32 get_node_id() const { return NODE_ID; }
 	};
 
@@ -525,8 +525,8 @@ namespace opc_ua
 		DataValue();
 
 		// metadata
-		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
-		virtual void unserialize(SerializationContext& ctx, Serializer& s);
+		virtual void serialize(WritableSerializationBuffer& ctx, Serializer& s) const;
+		virtual void unserialize(ReadableSerializationBuffer& ctx, Serializer& s);
 		virtual UInt32 get_node_id() const { return NODE_ID; }
 	};
 
@@ -540,8 +540,8 @@ namespace opc_ua
 		ReadResponse();
 
 		// metadata
-		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
-		virtual void unserialize(SerializationContext& ctx, Serializer& s);
+		virtual void serialize(WritableSerializationBuffer& ctx, Serializer& s) const;
+		virtual void unserialize(ReadableSerializationBuffer& ctx, Serializer& s);
 		virtual UInt32 get_node_id() const { return NODE_ID; }
 	};
 
@@ -554,8 +554,8 @@ namespace opc_ua
 		UserIdentityToken(String new_policy_id = "");
 
 		// metadata
-		virtual void serialize(SerializationContext& ctx, Serializer& s) const;
-		virtual void unserialize(SerializationContext& ctx, Serializer& s);
+		virtual void serialize(WritableSerializationBuffer& ctx, Serializer& s) const;
+		virtual void unserialize(ReadableSerializationBuffer& ctx, Serializer& s);
 		virtual UInt32 get_node_id() const { return NODE_ID; }
 	};
 

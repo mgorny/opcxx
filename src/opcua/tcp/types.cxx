@@ -18,44 +18,44 @@
 // Unix Epoch offset in seconds
 static opc_ua::Int64 unix_epoch_s = 11644478640;
 
-void opc_ua::tcp::BinarySerializer::serialize(SerializationContext& ctx, Boolean b)
+void opc_ua::tcp::BinarySerializer::serialize(WritableSerializationBuffer& ctx, Boolean b)
 {
 	Byte i = b ? 1 : 0;
 
 	ctx.write(&i, sizeof(i));
 }
 
-void opc_ua::tcp::BinarySerializer::serialize(SerializationContext& ctx, Byte i)
+void opc_ua::tcp::BinarySerializer::serialize(WritableSerializationBuffer& ctx, Byte i)
 {
 	ctx.write(&i, sizeof(i));
 }
 
-void opc_ua::tcp::BinarySerializer::serialize(SerializationContext& ctx, UInt16 i)
+void opc_ua::tcp::BinarySerializer::serialize(WritableSerializationBuffer& ctx, UInt16 i)
 {
 	ctx.write(&i, sizeof(i));
 }
 
-void opc_ua::tcp::BinarySerializer::serialize(SerializationContext& ctx, UInt32 i)
+void opc_ua::tcp::BinarySerializer::serialize(WritableSerializationBuffer& ctx, UInt32 i)
 {
 	ctx.write(&i, sizeof(i));
 }
 
-void opc_ua::tcp::BinarySerializer::serialize(SerializationContext& ctx, Int32 i)
+void opc_ua::tcp::BinarySerializer::serialize(WritableSerializationBuffer& ctx, Int32 i)
 {
 	ctx.write(&i, sizeof(i));
 }
 
-void opc_ua::tcp::BinarySerializer::serialize(SerializationContext& ctx, Int64 i)
+void opc_ua::tcp::BinarySerializer::serialize(WritableSerializationBuffer& ctx, Int64 i)
 {
 	ctx.write(&i, sizeof(i));
 }
 
-void opc_ua::tcp::BinarySerializer::serialize(SerializationContext& ctx, Double f)
+void opc_ua::tcp::BinarySerializer::serialize(WritableSerializationBuffer& ctx, Double f)
 {
 	ctx.write(&f, sizeof(f));
 }
 
-void opc_ua::tcp::BinarySerializer::serialize(SerializationContext& ctx, const String& s)
+void opc_ua::tcp::BinarySerializer::serialize(WritableSerializationBuffer& ctx, const String& s)
 {
 	Int32 s_len = s.size();
 	// TODO: allow proper distinction between null & empty string
@@ -66,7 +66,7 @@ void opc_ua::tcp::BinarySerializer::serialize(SerializationContext& ctx, const S
 		ctx.write(s.c_str(), s_len);
 }
 
-void opc_ua::tcp::BinarySerializer::serialize(SerializationContext& ctx, DateTime t)
+void opc_ua::tcp::BinarySerializer::serialize(WritableSerializationBuffer& ctx, DateTime t)
 {
 	// convert time_t to seconds since 1601-01-01
 	Int64 secs = unix_epoch_s + t.ts.tv_sec;
@@ -86,7 +86,7 @@ struct LocalizedTextEncodingMask
 	static constexpr opc_ua::Byte TEXT_SPECIFIED = 0x02;
 };
 
-void opc_ua::tcp::BinarySerializer::serialize(SerializationContext& ctx, const LocalizedText& s)
+void opc_ua::tcp::BinarySerializer::serialize(WritableSerializationBuffer& ctx, const LocalizedText& s)
 {
 	Byte flags = 0;
 
@@ -102,7 +102,7 @@ void opc_ua::tcp::BinarySerializer::serialize(SerializationContext& ctx, const L
 		serialize(ctx, s.text);
 }
 
-void opc_ua::tcp::BinarySerializer::serialize(SerializationContext& ctx, const GUID& g)
+void opc_ua::tcp::BinarySerializer::serialize(WritableSerializationBuffer& ctx, const GUID& g)
 {
 	// first 8 bytes go as little-endian integers
 	UInt32 data1 = g.guid[0] << 24 | g.guid[1] << 16 | g.guid[2] << 8 | g.guid[3];
@@ -117,7 +117,7 @@ void opc_ua::tcp::BinarySerializer::serialize(SerializationContext& ctx, const G
 	ctx.write(data4, 8);
 }
 
-void opc_ua::tcp::BinarySerializer::serialize(SerializationContext& ctx, const NodeId& n)
+void opc_ua::tcp::BinarySerializer::serialize(WritableSerializationBuffer& ctx, const NodeId& n)
 {
 	switch (n.type)
 	{
@@ -170,12 +170,12 @@ void opc_ua::tcp::BinarySerializer::serialize(SerializationContext& ctx, const N
 	}
 }
 
-void opc_ua::tcp::BinarySerializer::serialize(SerializationContext& ctx, const Struct& s)
+void opc_ua::tcp::BinarySerializer::serialize(WritableSerializationBuffer& ctx, const Struct& s)
 {
 	s.serialize(ctx, *this);
 }
 
-void opc_ua::tcp::BinarySerializer::serialize(SerializationContext& ctx, const ExtensionObject& s)
+void opc_ua::tcp::BinarySerializer::serialize(WritableSerializationBuffer& ctx, const ExtensionObject& s)
 {
 	if (!s.inner_object)
 	{
@@ -191,48 +191,48 @@ void opc_ua::tcp::BinarySerializer::serialize(SerializationContext& ctx, const E
 
 		NodeId mapped_id(id_mapping.at(orig_id.as_int));
 
-		TemporarySerializationContext lctx;
+		MemorySerializationBuffer lctx;
 		// serialize to buffer to obtain length
 		s.inner_object.get()->serialize(lctx, *this);
 
 		serialize(ctx, mapped_id);
 		serialize(ctx, Byte(1));
 		serialize(ctx, static_cast<UInt32>(lctx.size()));
-		ctx.write(lctx);
+		ctx.move(lctx);
 	}
 }
 
-void opc_ua::tcp::BinarySerializer::serialize(SerializationContext& ctx, const Variant& v)
+void opc_ua::tcp::BinarySerializer::serialize(WritableSerializationBuffer& ctx, const Variant& v)
 {
 	throw std::runtime_error("Not implemented yet");
 }
 
-void opc_ua::tcp::BinarySerializer::serialize(SerializationContext& ctx, MessageType t)
+void opc_ua::tcp::BinarySerializer::serialize(WritableSerializationBuffer& ctx, MessageType t)
 {
 	UInt32 as_uint = static_cast<UInt32>(t);
 	ctx.write(&as_uint, sizeof(Byte)*3);
 }
 
-void opc_ua::tcp::BinarySerializer::serialize(SerializationContext& ctx, MessageIsFinal b)
+void opc_ua::tcp::BinarySerializer::serialize(WritableSerializationBuffer& ctx, MessageIsFinal b)
 {
 	Byte as_byte = static_cast<Byte>(b);
 	ctx.write(&as_byte, sizeof(as_byte));
 }
 
-void opc_ua::tcp::BinarySerializer::serialize(SerializationContext& ctx, const MessageHeader& h)
+void opc_ua::tcp::BinarySerializer::serialize(WritableSerializationBuffer& ctx, const MessageHeader& h)
 {
 	serialize(ctx, h.message_type);
 	serialize(ctx, h.is_final);
 	serialize(ctx, h.message_size);
 }
 
-void opc_ua::tcp::BinarySerializer::serialize(SerializationContext& ctx, const SecureConversationMessageHeader& h)
+void opc_ua::tcp::BinarySerializer::serialize(WritableSerializationBuffer& ctx, const SecureConversationMessageHeader& h)
 {
 	serialize(ctx, static_cast<const MessageHeader&>(h));
 	serialize(ctx, h.secure_channel_id);
 }
 
-void opc_ua::tcp::BinarySerializer::serialize(SerializationContext& ctx, const HelloMessage& msg)
+void opc_ua::tcp::BinarySerializer::serialize(WritableSerializationBuffer& ctx, const HelloMessage& msg)
 {
 	if (msg.endpoint_url.size() >= 4096)
 		throw std::runtime_error("Endpoint URL length exceeds 4096 bytes");
@@ -245,7 +245,7 @@ void opc_ua::tcp::BinarySerializer::serialize(SerializationContext& ctx, const H
 	serialize(ctx, msg.endpoint_url);
 }
 
-void opc_ua::tcp::BinarySerializer::serialize(SerializationContext& ctx, const AcknowledgeMessage& msg)
+void opc_ua::tcp::BinarySerializer::serialize(WritableSerializationBuffer& ctx, const AcknowledgeMessage& msg)
 {
 	serialize(ctx, msg.protocol_version);
 	serialize(ctx, msg.receive_buffer_size);
@@ -254,31 +254,31 @@ void opc_ua::tcp::BinarySerializer::serialize(SerializationContext& ctx, const A
 	serialize(ctx, msg.max_chunk_count);
 }
 
-void opc_ua::tcp::BinarySerializer::serialize(SerializationContext& ctx, const ErrorMessage& msg)
+void opc_ua::tcp::BinarySerializer::serialize(WritableSerializationBuffer& ctx, const ErrorMessage& msg)
 {
 	serialize(ctx, msg.error);
 	serialize(ctx, msg.reason);
 }
 
-void opc_ua::tcp::BinarySerializer::serialize(SerializationContext& ctx, const AsymmetricAlgorithmSecurityHeader& h)
+void opc_ua::tcp::BinarySerializer::serialize(WritableSerializationBuffer& ctx, const AsymmetricAlgorithmSecurityHeader& h)
 {
 	serialize(ctx, h.security_policy_uri);
 	serialize(ctx, h.sender_certificate);
 	serialize(ctx, h.receiver_certificate_thumbprint);
 }
 
-void opc_ua::tcp::BinarySerializer::serialize(SerializationContext& ctx, const SymmetricAlgorithmSecurityHeader& h)
+void opc_ua::tcp::BinarySerializer::serialize(WritableSerializationBuffer& ctx, const SymmetricAlgorithmSecurityHeader& h)
 {
 	serialize(ctx, h.token_id);
 }
 
-void opc_ua::tcp::BinarySerializer::serialize(SerializationContext& ctx, const SequenceHeader& h)
+void opc_ua::tcp::BinarySerializer::serialize(WritableSerializationBuffer& ctx, const SequenceHeader& h)
 {
 	serialize(ctx, h.sequence_number);
 	serialize(ctx, h.request_id);
 }
 
-void opc_ua::tcp::BinarySerializer::serialize(SerializationContext& ctx, const AbstractArraySerialization& a)
+void opc_ua::tcp::BinarySerializer::serialize(WritableSerializationBuffer& ctx, const AbstractArraySerialization& a)
 {
 	Int32 a_len = a.size();
 	// TODO: allow proper distinction between null & empty array
@@ -289,7 +289,7 @@ void opc_ua::tcp::BinarySerializer::serialize(SerializationContext& ctx, const A
 	a.serialize_all(ctx, *this);
 }
 
-void opc_ua::tcp::BinarySerializer::unserialize(SerializationContext& ctx, Boolean& b)
+void opc_ua::tcp::BinarySerializer::unserialize(ReadableSerializationBuffer& ctx, Boolean& b)
 {
 	Byte i;
 	ctx.read(&i, sizeof(i));
@@ -297,37 +297,37 @@ void opc_ua::tcp::BinarySerializer::unserialize(SerializationContext& ctx, Boole
 	b = !!i;
 }
 
-void opc_ua::tcp::BinarySerializer::unserialize(SerializationContext& ctx, Byte& i)
+void opc_ua::tcp::BinarySerializer::unserialize(ReadableSerializationBuffer& ctx, Byte& i)
 {
 	ctx.read(&i, sizeof(i));
 }
 
-void opc_ua::tcp::BinarySerializer::unserialize(SerializationContext& ctx, UInt16& i)
+void opc_ua::tcp::BinarySerializer::unserialize(ReadableSerializationBuffer& ctx, UInt16& i)
 {
 	ctx.read(&i, sizeof(i));
 }
 
-void opc_ua::tcp::BinarySerializer::unserialize(SerializationContext& ctx, UInt32& i)
+void opc_ua::tcp::BinarySerializer::unserialize(ReadableSerializationBuffer& ctx, UInt32& i)
 {
 	ctx.read(&i, sizeof(i));
 }
 
-void opc_ua::tcp::BinarySerializer::unserialize(SerializationContext& ctx, Int32& i)
+void opc_ua::tcp::BinarySerializer::unserialize(ReadableSerializationBuffer& ctx, Int32& i)
 {
 	ctx.read(&i, sizeof(i));
 }
 
-void opc_ua::tcp::BinarySerializer::unserialize(SerializationContext& ctx, Int64& i)
+void opc_ua::tcp::BinarySerializer::unserialize(ReadableSerializationBuffer& ctx, Int64& i)
 {
 	ctx.read(&i, sizeof(i));
 }
 
-void opc_ua::tcp::BinarySerializer::unserialize(SerializationContext& ctx, Double& f)
+void opc_ua::tcp::BinarySerializer::unserialize(ReadableSerializationBuffer& ctx, Double& f)
 {
 	ctx.read(&f, sizeof(f));
 }
 
-void opc_ua::tcp::BinarySerializer::unserialize(SerializationContext& ctx, String& s)
+void opc_ua::tcp::BinarySerializer::unserialize(ReadableSerializationBuffer& ctx, String& s)
 {
 	Int32 length;
 	ctx.read(&length, sizeof(length));
@@ -343,7 +343,7 @@ void opc_ua::tcp::BinarySerializer::unserialize(SerializationContext& ctx, Strin
 	}
 }
 
-void opc_ua::tcp::BinarySerializer::unserialize(SerializationContext& ctx, DateTime& t)
+void opc_ua::tcp::BinarySerializer::unserialize(ReadableSerializationBuffer& ctx, DateTime& t)
 {
 	Int64 ts;
 	unserialize(ctx, ts);
@@ -356,7 +356,7 @@ void opc_ua::tcp::BinarySerializer::unserialize(SerializationContext& ctx, DateT
 	t.ts.tv_sec = ts - unix_epoch_s;
 }
 
-void opc_ua::tcp::BinarySerializer::unserialize(SerializationContext& ctx, LocalizedText& s)
+void opc_ua::tcp::BinarySerializer::unserialize(ReadableSerializationBuffer& ctx, LocalizedText& s)
 {
 	Byte flags;
 
@@ -373,7 +373,7 @@ void opc_ua::tcp::BinarySerializer::unserialize(SerializationContext& ctx, Local
 		s.text.clear();
 }
 
-void opc_ua::tcp::BinarySerializer::unserialize(SerializationContext& ctx, GUID& g)
+void opc_ua::tcp::BinarySerializer::unserialize(ReadableSerializationBuffer& ctx, GUID& g)
 {
 	UInt32 data1;
 	UInt16 data2;
@@ -397,7 +397,7 @@ void opc_ua::tcp::BinarySerializer::unserialize(SerializationContext& ctx, GUID&
 	ctx.read(&g.guid[8], 8);
 }
 
-void opc_ua::tcp::BinarySerializer::unserialize(SerializationContext& ctx, NodeId& n)
+void opc_ua::tcp::BinarySerializer::unserialize(ReadableSerializationBuffer& ctx, NodeId& n)
 {
 	Byte node_type;
 
@@ -462,12 +462,12 @@ void opc_ua::tcp::BinarySerializer::unserialize(SerializationContext& ctx, NodeI
 	}
 }
 
-void opc_ua::tcp::BinarySerializer::unserialize(SerializationContext& ctx, Struct& s)
+void opc_ua::tcp::BinarySerializer::unserialize(ReadableSerializationBuffer& ctx, Struct& s)
 {
 	s.unserialize(ctx, *this);
 }
 
-void opc_ua::tcp::BinarySerializer::unserialize(SerializationContext& ctx, ExtensionObject& s)
+void opc_ua::tcp::BinarySerializer::unserialize(ReadableSerializationBuffer& ctx, ExtensionObject& s)
 {
 	// Note: extension objects are not supported now.
 	NodeId id;
@@ -493,14 +493,14 @@ void opc_ua::tcp::BinarySerializer::unserialize(SerializationContext& ctx, Exten
 		UInt32 length;
 		unserialize(ctx, length);
 
-		TemporarySerializationContext buf;
+		MemorySerializationBuffer buf;
 		buf.move(ctx, length);
 
 		s.inner_object.get()->unserialize(buf, *this);
 	}
 }
 
-void opc_ua::tcp::BinarySerializer::unserialize(SerializationContext& ctx, Variant& v)
+void opc_ua::tcp::BinarySerializer::unserialize(ReadableSerializationBuffer& ctx, Variant& v)
 {
 	Byte encoding_mask;
 	VariantType vtype;
@@ -544,7 +544,7 @@ void opc_ua::tcp::BinarySerializer::unserialize(SerializationContext& ctx, Varia
 	v.variant_type = vtype;
 }
 
-void opc_ua::tcp::BinarySerializer::unserialize(SerializationContext& ctx, MessageIsFinal& b)
+void opc_ua::tcp::BinarySerializer::unserialize(ReadableSerializationBuffer& ctx, MessageIsFinal& b)
 {
 	Byte as_byte;
 	ctx.read(&as_byte, sizeof(as_byte));
@@ -552,7 +552,7 @@ void opc_ua::tcp::BinarySerializer::unserialize(SerializationContext& ctx, Messa
 	b = static_cast<MessageIsFinal>(as_byte);
 }
 
-void opc_ua::tcp::BinarySerializer::unserialize(SerializationContext& ctx, MessageType& t)
+void opc_ua::tcp::BinarySerializer::unserialize(ReadableSerializationBuffer& ctx, MessageType& t)
 {
 	UInt32 as_uint = 0;
 	ctx.read(&as_uint, sizeof(Byte)*3);
@@ -560,14 +560,14 @@ void opc_ua::tcp::BinarySerializer::unserialize(SerializationContext& ctx, Messa
 	t = static_cast<MessageType>(as_uint);
 }
 
-void opc_ua::tcp::BinarySerializer::unserialize(SerializationContext& ctx, MessageHeader& h)
+void opc_ua::tcp::BinarySerializer::unserialize(ReadableSerializationBuffer& ctx, MessageHeader& h)
 {
 	unserialize(ctx, h.message_type);
 	unserialize(ctx, h.is_final);
 	unserialize(ctx, h.message_size);
 }
 
-void opc_ua::tcp::BinarySerializer::unserialize(SerializationContext& ctx, HelloMessage& msg)
+void opc_ua::tcp::BinarySerializer::unserialize(ReadableSerializationBuffer& ctx, HelloMessage& msg)
 {
 	unserialize(ctx, msg.protocol_version);
 	unserialize(ctx, msg.receive_buffer_size);
@@ -577,7 +577,7 @@ void opc_ua::tcp::BinarySerializer::unserialize(SerializationContext& ctx, Hello
 	unserialize(ctx, msg.endpoint_url);
 }
 
-void opc_ua::tcp::BinarySerializer::unserialize(SerializationContext& ctx, AcknowledgeMessage& msg)
+void opc_ua::tcp::BinarySerializer::unserialize(ReadableSerializationBuffer& ctx, AcknowledgeMessage& msg)
 {
 	unserialize(ctx, msg.protocol_version);
 	unserialize(ctx, msg.receive_buffer_size);
@@ -586,31 +586,31 @@ void opc_ua::tcp::BinarySerializer::unserialize(SerializationContext& ctx, Ackno
 	unserialize(ctx, msg.max_chunk_count);
 }
 
-void opc_ua::tcp::BinarySerializer::unserialize(SerializationContext& ctx, ErrorMessage& msg)
+void opc_ua::tcp::BinarySerializer::unserialize(ReadableSerializationBuffer& ctx, ErrorMessage& msg)
 {
 	unserialize(ctx, msg.error);
 	unserialize(ctx, msg.reason);
 }
 
-void opc_ua::tcp::BinarySerializer::unserialize(SerializationContext& ctx, AsymmetricAlgorithmSecurityHeader& h)
+void opc_ua::tcp::BinarySerializer::unserialize(ReadableSerializationBuffer& ctx, AsymmetricAlgorithmSecurityHeader& h)
 {
 	unserialize(ctx, h.security_policy_uri);
 	unserialize(ctx, h.sender_certificate);
 	unserialize(ctx, h.receiver_certificate_thumbprint);
 }
 
-void opc_ua::tcp::BinarySerializer::unserialize(SerializationContext& ctx, SymmetricAlgorithmSecurityHeader& h)
+void opc_ua::tcp::BinarySerializer::unserialize(ReadableSerializationBuffer& ctx, SymmetricAlgorithmSecurityHeader& h)
 {
 	unserialize(ctx, h.token_id);
 }
 
-void opc_ua::tcp::BinarySerializer::unserialize(SerializationContext& ctx, SequenceHeader& h)
+void opc_ua::tcp::BinarySerializer::unserialize(ReadableSerializationBuffer& ctx, SequenceHeader& h)
 {
 	unserialize(ctx, h.sequence_number);
 	unserialize(ctx, h.request_id);
 }
 
-void opc_ua::tcp::BinarySerializer::unserialize(SerializationContext& ctx, const AbstractArrayUnserialization& a)
+void opc_ua::tcp::BinarySerializer::unserialize(ReadableSerializationBuffer& ctx, const AbstractArrayUnserialization& a)
 {
 	Int32 length;
 	ctx.read(&length, sizeof(length));
