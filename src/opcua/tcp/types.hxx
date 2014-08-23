@@ -86,23 +86,26 @@ namespace opc_ua
 				+ sizeof(secure_channel_id);
 		};
 
-		struct HelloMessage
+		struct ProtocolInfo
 		{
 			UInt32 protocol_version;
 			UInt32 receive_buffer_size;
 			UInt32 send_buffer_size;
 			UInt32 max_message_size;
 			UInt32 max_chunk_count;
+		};
+
+		extern const ProtocolInfo libevent_protocol_info;
+
+		struct HelloMessage
+		{
+			ProtocolInfo protocol_info;
 			String endpoint_url;
 		};
 
 		struct AcknowledgeMessage
 		{
-			UInt32 protocol_version;
-			UInt32 receive_buffer_size;
-			UInt32 send_buffer_size;
-			UInt32 max_message_size;
-			UInt32 max_chunk_count;
+			ProtocolInfo protocol_info;
 		};
 
 		struct ErrorMessage
@@ -179,6 +182,7 @@ namespace opc_ua
 			void serialize(WritableSerializationBuffer& ctx, MessageType t);
 			void serialize(WritableSerializationBuffer& ctx, const MessageHeader& h);
 			void serialize(WritableSerializationBuffer& ctx, const SecureConversationMessageHeader& h);
+			void serialize(WritableSerializationBuffer& ctx, const ProtocolInfo& proto);
 			void serialize(WritableSerializationBuffer& ctx, const HelloMessage& msg);
 			void serialize(WritableSerializationBuffer& ctx, const AcknowledgeMessage& msg);
 			void serialize(WritableSerializationBuffer& ctx, const ErrorMessage& msg);
@@ -189,6 +193,7 @@ namespace opc_ua
 			void unserialize(ReadableSerializationBuffer& ctx, MessageIsFinal& b);
 			void unserialize(ReadableSerializationBuffer& ctx, MessageType& t);
 			void unserialize(ReadableSerializationBuffer& ctx, MessageHeader& h);
+			void unserialize(ReadableSerializationBuffer& ctx, ProtocolInfo& proto);
 			void unserialize(ReadableSerializationBuffer& ctx, HelloMessage& msg);
 			void unserialize(ReadableSerializationBuffer& ctx, AcknowledgeMessage& msg);
 			void unserialize(ReadableSerializationBuffer& ctx, ErrorMessage& msg);

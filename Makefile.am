@@ -9,17 +9,19 @@ noinst_HEADERS = \
 	src/opcua/common/types.hxx \
 	src/opcua/common/util.hxx \
 	src/opcua/tcp/idmapping.hxx \
+	src/opcua/tcp/server.hxx \
 	src/opcua/tcp/streams.hxx \
 	src/opcua/tcp/types.hxx
 
 lib_LTLIBRARIES = libopcua.la
-noinst_PROGRAMS = test
+noinst_PROGRAMS = test stest
 
 libopcua_la_SOURCES = \
 	src/opcua/common/struct.cxx \
 	src/opcua/common/types.cxx \
 	src/opcua/common/util.cxx \
 	src/opcua/tcp/idmapping.cxx \
+	src/opcua/tcp/server.cxx \
 	src/opcua/tcp/streams.cxx \
 	src/opcua/tcp/types.cxx \
 	$(noinst_HEADERS)
@@ -36,6 +38,15 @@ test_LDADD = \
 	libopcua.la
 test_SOURCES = \
 	test.cxx \
+	$(noinst_HEADERS)
+
+stest_CPPFLAGS = \
+	$(libopcua_la_CPPFLAGS) \
+	$(AM_CPPFLAGS)
+stest_LDADD = \
+	libopcua.la
+stest_SOURCES = \
+	stest.cxx \
 	$(noinst_HEADERS)
 
 TESTS = tests/serializer

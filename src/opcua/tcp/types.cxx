@@ -18,6 +18,15 @@
 // Unix Epoch offset in seconds
 static opc_ua::Int64 unix_epoch_s = 11644478640;
 
+const opc_ua::tcp::ProtocolInfo opc_ua::tcp::libevent_protocol_info = {
+	.protocol_version = 0,
+	// our buffers are pretty much unlimited thanks to libevent
+	.receive_buffer_size = 0x100000,
+	.send_buffer_size = 0x100000,
+	.max_message_size = 0,
+	.max_chunk_count = 0,
+};
+
 void opc_ua::tcp::BinarySerializer::serialize(WritableSerializationBuffer& ctx, Boolean b)
 {
 	Byte i = b ? 1 : 0;
@@ -274,26 +283,27 @@ void opc_ua::tcp::BinarySerializer::serialize(WritableSerializationBuffer& ctx, 
 	serialize(ctx, h.secure_channel_id);
 }
 
+void opc_ua::tcp::BinarySerializer::serialize(WritableSerializationBuffer& ctx, const ProtocolInfo& proto)
+{
+	serialize(ctx, proto.protocol_version);
+	serialize(ctx, proto.receive_buffer_size);
+	serialize(ctx, proto.send_buffer_size);
+	serialize(ctx, proto.max_message_size);
+	serialize(ctx, proto.max_chunk_count);
+}
+
 void opc_ua::tcp::BinarySerializer::serialize(WritableSerializationBuffer& ctx, const HelloMessage& msg)
 {
 	if (msg.endpoint_url.size() >= 4096)
 		throw std::runtime_error("Endpoint URL length exceeds 4096 bytes");
 
-	serialize(ctx, msg.protocol_version);
-	serialize(ctx, msg.receive_buffer_size);
-	serialize(ctx, msg.send_buffer_size);
-	serialize(ctx, msg.max_message_size);
-	serialize(ctx, msg.max_chunk_count);
+	serialize(ctx, msg.protocol_info);
 	serialize(ctx, msg.endpoint_url);
 }
 
 void opc_ua::tcp::BinarySerializer::serialize(WritableSerializationBuffer& ctx, const AcknowledgeMessage& msg)
 {
-	serialize(ctx, msg.protocol_version);
-	serialize(ctx, msg.receive_buffer_size);
-	serialize(ctx, msg.send_buffer_size);
-	serialize(ctx, msg.max_message_size);
-	serialize(ctx, msg.max_chunk_count);
+	serialize(ctx, msg.protocol_info);
 }
 
 void opc_ua::tcp::BinarySerializer::serialize(WritableSerializationBuffer& ctx, const ErrorMessage& msg)
@@ -619,23 +629,24 @@ void opc_ua::tcp::BinarySerializer::unserialize(ReadableSerializationBuffer& ctx
 	unserialize(ctx, h.message_size);
 }
 
+void opc_ua::tcp::BinarySerializer::unserialize(ReadableSerializationBuffer& ctx, ProtocolInfo& proto)
+{
+	unserialize(ctx, proto.protocol_version);
+	unserialize(ctx, proto.receive_buffer_size);
+	unserialize(ctx, proto.send_buffer_size);
+	unserialize(ctx, proto.max_message_size);
+	unserialize(ctx, proto.max_chunk_count);
+}
+
 void opc_ua::tcp::BinarySerializer::unserialize(ReadableSerializationBuffer& ctx, HelloMessage& msg)
 {
-	unserialize(ctx, msg.protocol_version);
-	unserialize(ctx, msg.receive_buffer_size);
-	unserialize(ctx, msg.send_buffer_size);
-	unserialize(ctx, msg.max_message_size);
-	unserialize(ctx, msg.max_chunk_count);
+	unserialize(ctx, msg.protocol_info);
 	unserialize(ctx, msg.endpoint_url);
 }
 
 void opc_ua::tcp::BinarySerializer::unserialize(ReadableSerializationBuffer& ctx, AcknowledgeMessage& msg)
 {
-	unserialize(ctx, msg.protocol_version);
-	unserialize(ctx, msg.receive_buffer_size);
-	unserialize(ctx, msg.send_buffer_size);
-	unserialize(ctx, msg.max_message_size);
-	unserialize(ctx, msg.max_chunk_count);
+	unserialize(ctx, msg.protocol_info);
 }
 
 void opc_ua::tcp::BinarySerializer::unserialize(ReadableSerializationBuffer& ctx, ErrorMessage& msg)

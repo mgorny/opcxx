@@ -10,6 +10,7 @@
 
 #include <event2/bufferevent.h>
 #include <event2/event.h>
+#include <event2/listener.h>
 
 #include <opcua/common/struct.hxx>
 #include <opcua/common/types.hxx>

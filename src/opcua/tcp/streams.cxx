@@ -41,12 +41,7 @@ void opc_ua::tcp::TransportStream::connect_hostname(const char* hostname, uint16
 
 	// say hello after connecting
 	HelloMessage hello = {
-		.protocol_version = 0,
-		// our buffers are pretty much unlimited thanks to libevent
-		.receive_buffer_size = 0x100000,
-		.send_buffer_size = 0x100000,
-		.max_message_size = 0,
-		.max_chunk_count = 0,
+		.protocol_info = libevent_protocol_info,
 		.endpoint_url = endpoint,
 	};
 
