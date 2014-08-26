@@ -239,3 +239,15 @@ bool opc_ua::Variant::operator!=(const Variant& other) const
 {
 	return !(*this == other);
 }
+
+size_t std::hash<opc_ua::GUID>::operator()(const opc_ua::GUID& g) const
+{
+	std::hash<opc_ua::UInt32> int_hash;
+
+	// TODO: something smarter than this
+	return
+		int_hash(g.guid[0] << 24 | g.guid[1] << 16 | g.guid[2] << 8 | g.guid[3])
+		^ int_hash(g.guid[4] << 24 | g.guid[5] << 16 | g.guid[6] << 8 | g.guid[7])
+		^ int_hash(g.guid[8] << 24 | g.guid[9] << 16 | g.guid[10] << 8 | g.guid[11])
+		^ int_hash(g.guid[12] << 24 | g.guid[13] << 16 | g.guid[14] << 8 | g.guid[15]);
+}

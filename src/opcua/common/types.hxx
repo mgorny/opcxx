@@ -299,4 +299,14 @@ namespace opc_ua
 	ByteString random_nonce();
 };
 
+// hash support for custom OPC UA types
+namespace std
+{
+	template <>
+	struct hash<opc_ua::GUID>
+	{
+		size_t operator()(const opc_ua::GUID& g) const;
+	};
+};
+
 #endif /*OPCUA_COMMON_TYPES_HXX*/
