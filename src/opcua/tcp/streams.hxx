@@ -46,7 +46,7 @@ namespace opc_ua
 			MessageHeader h;
 
 			// remote side limits
-			AcknowledgeMessage remote_limits;
+			ProtocolInfo remote_limits;
 
 			// secure channels
 			std::unordered_map<UInt32, MessageStream*> secure_channels;

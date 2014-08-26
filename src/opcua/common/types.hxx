@@ -67,6 +67,10 @@ namespace opc_ua
 		// but let's keep it simple
 		std::array<Byte, 16> guid;
 
+		GUID();
+
+		static GUID random_guid();
+
 		bool operator==(const GUID& other) const;
 		bool operator!=(const GUID& other) const;
 	};

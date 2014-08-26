@@ -80,7 +80,9 @@ void opc_ua::tcp::TransportStream::read_handler(bufferevent* bev, void* ctx)
 	{
 		case MessageType::ACK:
 		{
-			srl.unserialize(buf, s->remote_limits);
+			AcknowledgeMessage ack;
+			srl.unserialize(buf, ack);
+			s->remote_limits = ack.protocol_info;
 
 			s->connected = true;
 			// push queued requests

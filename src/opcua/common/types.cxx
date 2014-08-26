@@ -40,6 +40,33 @@ bool opc_ua::DateTime::operator!=(DateTime other) const
 	return ts.tv_sec != other.ts.tv_sec || ts.tv_nsec != other.ts.tv_nsec;
 }
 
+opc_ua::GUID::GUID()
+	: guid{{0}}
+{
+}
+
+opc_ua::GUID opc_ua::GUID::random_guid()
+{
+	// based on RFC4122, sect. 4.4
+
+	std::random_device rnd("/dev/random");
+	std::uniform_int_distribution<Byte> dist;
+
+	GUID out;
+	// fill in with random bytes
+	for (auto& i : out.guid)
+		i = dist(rnd);
+
+	// clear variant and version bitfields
+	out.guid[8] &= ~0xc0;
+	out.guid[6] &= ~0xf0;
+	// set variant and version
+	out.guid[8] |= 0x80; // guid variant, 2 msbs
+	out.guid[6] |= 0x40; // version 4 (randomly-generated), 4 msbs
+
+	return out;
+}
+
 bool opc_ua::GUID::operator==(const GUID& other) const
 {
 	return guid == other.guid;
