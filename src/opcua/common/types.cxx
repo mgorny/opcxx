@@ -244,10 +244,49 @@ size_t std::hash<opc_ua::GUID>::operator()(const opc_ua::GUID& g) const
 {
 	std::hash<opc_ua::UInt32> int_hash;
 
-	// TODO: something smarter than this
-	return
-		int_hash(g.guid[0] << 24 | g.guid[1] << 16 | g.guid[2] << 8 | g.guid[3])
-		^ int_hash(g.guid[4] << 24 | g.guid[5] << 16 | g.guid[6] << 8 | g.guid[7])
-		^ int_hash(g.guid[8] << 24 | g.guid[9] << 16 | g.guid[10] << 8 | g.guid[11])
-		^ int_hash(g.guid[12] << 24 | g.guid[13] << 16 | g.guid[14] << 8 | g.guid[15]);
+	size_t r;
+
+	r = int_hash(g.guid[0] << 24 | g.guid[1] << 16 | g.guid[2] << 8 | g.guid[3]);
+	r <<= 1;
+	r ^= int_hash(g.guid[4] << 24 | g.guid[5] << 16 | g.guid[6] << 8 | g.guid[7]);
+	r <<= 1;
+	r ^= int_hash(g.guid[8] << 24 | g.guid[9] << 16 | g.guid[10] << 8 | g.guid[11]);
+	r <<= 1;
+	r ^= int_hash(g.guid[12] << 24 | g.guid[13] << 16 | g.guid[14] << 8 | g.guid[15]);
+
+	return r;
+}
+
+size_t std::hash<opc_ua::NodeId>::operator()(const opc_ua::NodeId& id) const
+{
+	std::hash<opc_ua::UInt32> int_hash;
+	std::hash<opc_ua::UInt16> int16_hash;
+	std::hash<opc_ua::ByteString> bs_hash;
+	std::hash<opc_ua::GUID> guid_hash;
+	std::hash<opc_ua::CharArray> str_hash;
+
+	size_t r = int_hash(static_cast<opc_ua::UInt32>(id.type));
+	r <<= 1;
+	r ^= int16_hash(id.ns);
+	r <<= 1;
+
+	switch (id.type)
+	{
+		case opc_ua::NodeIdType::NUMERIC:
+			r ^= int_hash(id.as_int);
+			break;
+		case opc_ua::NodeIdType::BYTE_STRING:
+			r ^= bs_hash(id.as_bytestring);
+			break;
+		case opc_ua::NodeIdType::GUID:
+			r ^= guid_hash(id.as_guid);
+			break;
+		case opc_ua::NodeIdType::STRING:
+			r ^= str_hash(id.as_bytestring);
+			break;
+		default:
+			throw std::runtime_error("Unsupported NodeId type");
+	}
+
+	return r;
 }

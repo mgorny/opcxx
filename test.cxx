@@ -30,10 +30,12 @@ void on_started(std::unique_ptr<opc_ua::Response> msg, void* data)
 	rvr.timestamps_to_return = opc_ua::TimestampsToReturn::SERVER;
 	rvr.nodes_to_read.emplace_back();
 	rvr.nodes_to_read[0].node_id = opc_ua::NodeId("sampleBuilding", 2);
-	rvr.nodes_to_read[0].attribute_id = 3;
-	for (int i = 0; i < 200; ++i)
-		rvr.nodes_to_read.push_back(rvr.nodes_to_read[0]);
-	self->write_message(rvr, [] (std::unique_ptr<opc_ua::Response> msg, void* data) {}, data);
+	rvr.nodes_to_read[0].attribute_id = 2;
+	self->write_message(rvr, [] (std::unique_ptr<opc_ua::Response> msg, void* data)
+		{
+			opc_ua::ReadResponse* rsp = dynamic_cast<opc_ua::ReadResponse*>(msg.get());
+			std::cout << rsp->results[0].value.as_int32 << std::endl;
+		}, data);
 
 	//ns=2;'sampleBuilding'
 }

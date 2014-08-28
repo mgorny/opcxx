@@ -307,6 +307,12 @@ namespace std
 	{
 		size_t operator()(const opc_ua::GUID& g) const;
 	};
+
+	template <>
+	struct hash<opc_ua::NodeId>
+	{
+		size_t operator()(const opc_ua::NodeId& id) const;
+	};
 };
 
 #endif /*OPCUA_COMMON_TYPES_HXX*/

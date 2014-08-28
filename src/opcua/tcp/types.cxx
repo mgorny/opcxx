@@ -220,6 +220,8 @@ void opc_ua::tcp::BinarySerializer::serialize(WritableSerializationBuffer& ctx, 
 
 	switch (v.variant_type)
 	{
+		case VariantType::NONE:
+			break;
 		case VariantType::BOOLEAN:
 			serialize(ctx, v.as_boolean);
 			break;
@@ -567,6 +569,8 @@ void opc_ua::tcp::BinarySerializer::unserialize(ReadableSerializationBuffer& ctx
 
 	switch (vtype)
 	{
+		case VariantType::NONE:
+			break;
 		case VariantType::BOOLEAN:
 			unserialize(ctx, v.as_boolean);
 			break;
