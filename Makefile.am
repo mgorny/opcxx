@@ -5,18 +5,21 @@ AM_CPPFLAGS = \
 	-I$(srcdir)/src
 
 noinst_HEADERS = \
+	src/opcua/common/object.hxx \
 	src/opcua/common/struct.hxx \
 	src/opcua/common/types.hxx \
 	src/opcua/common/util.hxx \
 	src/opcua/tcp/idmapping.hxx \
 	src/opcua/tcp/server.hxx \
 	src/opcua/tcp/streams.hxx \
-	src/opcua/tcp/types.hxx
+	src/opcua/tcp/types.hxx \
+	src/mt101/mt101.hxx
 
-lib_LTLIBRARIES = libopcua.la
+lib_LTLIBRARIES = libopcua.la libmt101.la
 noinst_PROGRAMS = test stest
 
 libopcua_la_SOURCES = \
+	src/opcua/common/object.cxx \
 	src/opcua/common/struct.cxx \
 	src/opcua/common/types.cxx \
 	src/opcua/common/util.cxx \
@@ -31,6 +34,15 @@ libopcua_la_CPPFLAGS = \
 libopcua_la_LIBADD = \
 	$(LIBEVENT_LIBS)
 
+libmt101_la_SOURCES = \
+	src/mt101/mt101.cxx \
+	$(noinst_HEADERS)
+libmt101_la_CPPFLAGS = \
+	$(LIBMODBUS_CFLAGS) \
+	$(AM_CPPFLAGS)
+libmt101_la_LIBADD = \
+	$(LIBMODBUS_LIBS)
+
 test_CPPFLAGS = \
 	$(libopcua_la_CPPFLAGS) \
 	$(AM_CPPFLAGS)
@@ -42,8 +54,10 @@ test_SOURCES = \
 
 stest_CPPFLAGS = \
 	$(libopcua_la_CPPFLAGS) \
+	$(libmt101_la_CPPFLAGS) \
 	$(AM_CPPFLAGS)
 stest_LDADD = \
+	libmt101.la \
 	libopcua.la
 stest_SOURCES = \
 	stest.cxx \

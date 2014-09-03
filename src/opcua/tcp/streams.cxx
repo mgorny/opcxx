@@ -221,7 +221,7 @@ opc_ua::tcp::MessageStream::~MessageStream()
 
 void opc_ua::tcp::MessageStream::write_message(Request& msg, MessageType msg_type)
 {
-	MemorySerializationBuffer sctx;
+	MemorySerializationBuffer headers, body;
 	BinarySerializer srl;
 
 	// OPN message takes asymmetric header
@@ -233,31 +233,55 @@ void opc_ua::tcp::MessageStream::write_message(Request& msg, MessageType msg_typ
 			.sender_certificate = "",
 			.receiver_certificate_thumbprint = "",
 		};
-		srl.serialize(sctx, sech);
+		srl.serialize(headers, sech);
 	}
 	else
 	{
 		SymmetricAlgorithmSecurityHeader sech = {
 			.token_id = token_id,
 		};
-		srl.serialize(sctx, sech);
+		srl.serialize(headers, sech);
 	}
 
 	SequenceHeader seqh = {
 		.sequence_number = sequence_number++,
 		.request_id = next_request_id++,
 	};
-	srl.serialize(sctx, seqh);
 
 	NodeId msg_id(id_mapping.at(msg.get_node_id()));
-	srl.serialize(sctx, msg_id);
+	srl.serialize(body, msg_id);
 
 	// fill request header in
 	msg.request_header.timestamp = DateTime::now();
 	msg.request_header.request_handle = seqh.request_id;
-	srl.serialize(sctx, msg);
+	srl.serialize(body, msg);
 
-	ts.write_message(msg_type, MessageIsFinal::FINAL, sctx, secure_channel_id);
+	// message splitting support
+	size_t max_chunk_size = ts.remote_limits.receive_buffer_size
+		- SecureConversationMessageHeader::serialized_length
+		- SequenceHeader::serialized_length
+		- headers.size();
+
+	std::vector<Byte> headers_copy(headers.size());
+	headers.read(headers_copy.data(), headers_copy.size());
+
+	while (1)
+	{
+		MemorySerializationBuffer buf;
+
+		buf.write(headers_copy.data(), headers_copy.size());
+		srl.serialize(buf, seqh);
+		buf.move(body, max_chunk_size);
+
+		ts.write_message(msg_type,
+				body.size() > 0 ? MessageIsFinal::INTERMEDIATE : MessageIsFinal::FINAL,
+				buf, secure_channel_id);
+
+		if (body.size() == 0)
+			break;
+
+		seqh.sequence_number = sequence_number++;
+	}
 }
 
 void opc_ua::tcp::MessageStream::request_secure_channel()

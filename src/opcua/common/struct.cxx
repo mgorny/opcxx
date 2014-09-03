@@ -511,7 +511,7 @@ void opc_ua::CloseSessionResponse::unserialize(ReadableSerializationBuffer& ctx,
 	s.unserialize(ctx, response_header);
 }
 
-opc_ua::QualifiedName::QualifiedName(UInt16 ns_index, CharArray new_name)
+opc_ua::QualifiedName::QualifiedName(CharArray new_name, UInt16 ns_index)
 	: namespace_index(ns_index), name(new_name)
 {
 }

@@ -130,6 +130,10 @@ namespace opc_ua
 		{
 			UInt32 sequence_number;
 			UInt32 request_id;
+
+			static constexpr size_t serialized_length
+				= sizeof(sequence_number)
+				+ sizeof(request_id);
 		};
 
 		struct SecureConversationMessageFooter

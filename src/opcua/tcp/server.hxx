@@ -12,6 +12,7 @@
 #include <event2/event.h>
 #include <event2/listener.h>
 
+#include <opcua/common/object.hxx>
 #include <opcua/common/struct.hxx>
 #include <opcua/common/types.hxx>
 #include <opcua/common/util.hxx>
@@ -25,6 +26,21 @@
 
 namespace opc_ua
 {
+	// TODO: move to common/
+	class AddressSpace
+	{
+		std::unordered_map<NodeId, std::shared_ptr<BaseNode>> nodes;
+
+	public:
+		void add_node(const std::shared_ptr<BaseNode>& n);
+		BaseNode& get_node(const NodeId& n);
+	};
+
+	// Detailed session information.
+	class Session
+	{
+	};
+
 	namespace tcp
 	{
 		extern const UInt32 server_namespace_index;
@@ -79,9 +95,6 @@ namespace opc_ua
 			bool got_header;
 			MessageHeader h;
 
-			// remote side limits
-			ProtocolInfo remote_limits;
-
 			// secure channels
 			std::unordered_map<UInt32, ServerMessageStream> secure_channels;
 			static UInt32 next_secure_channel_id;
@@ -90,6 +103,9 @@ namespace opc_ua
 			static void event_handler(bufferevent* bev, short what, void* ctx);
 
 		public:
+			// remote side limits
+			ProtocolInfo remote_limits;
+
 			ServerTransportStream(Server& serv, event_base* ev, evutil_socket_t sock);
 			~ServerTransportStream();
 
@@ -98,6 +114,7 @@ namespace opc_ua
 
 		class ServerSessionStream
 		{
+			Server& server;
 			ServerMessageStream* secure_channel;
 
 			std::string session_name;
@@ -109,11 +126,13 @@ namespace opc_ua
 #endif
 
 		public:
+			Session session;
+
 			// session info
 			NodeId session_id;
 			NodeId authentication_token;
 
-			ServerSessionStream(const CreateSessionRequest& csr, CreateSessionResponse& resp);
+			ServerSessionStream(Server& serv, const CreateSessionRequest& csr, CreateSessionResponse& resp);
 
 			void attach(ServerMessageStream& ms, const ActivateSessionRequest& asr, UInt32 request_id);
 
@@ -131,7 +150,9 @@ namespace opc_ua
 			std::vector<ServerSessionStream> sessions;
 
 		public:
-			Server(event_base* ev);
+			AddressSpace& address_space;
+
+			Server(event_base* ev, AddressSpace& as);
 
 			CreateSessionResponse create_session(const CreateSessionRequest& csr);
 			ServerSessionStream& activate_session(const ActivateSessionRequest& asr, ServerMessageStream& ms, UInt32 request_id);

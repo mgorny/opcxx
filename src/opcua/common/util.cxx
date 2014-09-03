@@ -57,8 +57,8 @@ void opc_ua::WritableSerializationBuffer::move(ReadableSerializationBuffer& othe
 {
 	ssize_t rd = evbuffer_remove_buffer(other.buf, buf, length);
 
-	if (rd < length)
-		throw std::runtime_error("Short read when moving the buffer");
+	if (rd == -1)
+		throw std::runtime_error("Failure moving data from the buffer");
 }
 
 opc_ua::MemorySerializationBuffer::MemorySerializationBuffer()

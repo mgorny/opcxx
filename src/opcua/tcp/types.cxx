@@ -21,8 +21,8 @@ static opc_ua::Int64 unix_epoch_s = 11644478640;
 const opc_ua::tcp::ProtocolInfo opc_ua::tcp::libevent_protocol_info = {
 	.protocol_version = 0,
 	// our buffers are pretty much unlimited thanks to libevent
-	.receive_buffer_size = 0x100000,
-	.send_buffer_size = 0x100000,
+	.receive_buffer_size = 0x10000000,
+	.send_buffer_size = 0x1000000,
 	.max_message_size = 0,
 	.max_chunk_count = 0,
 };

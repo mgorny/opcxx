@@ -45,9 +45,6 @@ namespace opc_ua
 			bool got_header;
 			MessageHeader h;
 
-			// remote side limits
-			ProtocolInfo remote_limits;
-
 			// secure channels
 			std::unordered_map<UInt32, MessageStream*> secure_channels;
 			std::vector<MessageStream*> secure_channel_queue;
@@ -56,6 +53,9 @@ namespace opc_ua
 			static void event_handler(bufferevent* bev, short what, void* ctx);
 
 		public:
+			// remote side limits
+			ProtocolInfo remote_limits;
+
 			TransportStream(event_base* ev);
 			~TransportStream();
 

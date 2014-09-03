@@ -2,6 +2,7 @@
 #	include "config.h"
 #endif
 
+#include <opcua/common/object.hxx>
 #include <opcua/common/struct.hxx>
 #include <opcua/tcp/streams.hxx>
 #include <opcua/common/types.hxx>
@@ -30,7 +31,8 @@ void on_started(std::unique_ptr<opc_ua::Response> msg, void* data)
 	rvr.timestamps_to_return = opc_ua::TimestampsToReturn::SERVER;
 	rvr.nodes_to_read.emplace_back();
 	rvr.nodes_to_read[0].node_id = opc_ua::NodeId("sampleBuilding", 2);
-	rvr.nodes_to_read[0].attribute_id = 2;
+	rvr.nodes_to_read[0].attribute_id = static_cast<opc_ua::UInt32>(opc_ua::AttributeId::VALUE);
+//	rvr.nodes_to_read[0].data_encoding.name = "Default XML";
 	self->write_message(rvr, [] (std::unique_ptr<opc_ua::Response> msg, void* data)
 		{
 			opc_ua::ReadResponse* rsp = dynamic_cast<opc_ua::ReadResponse*>(msg.get());

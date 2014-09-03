@@ -391,7 +391,7 @@ namespace opc_ua
 		UInt16 namespace_index;
 		CharArray name;
 
-		QualifiedName(UInt16 ns_index = 0, CharArray new_name = "");
+		QualifiedName(CharArray new_name = "", UInt16 ns_index = 0);
 
 		// metadata
 		virtual void serialize(WritableSerializationBuffer& ctx, Serializer& s) const;

@@ -47,7 +47,8 @@ void opc_ua::tcp::Server::handle_connection(evconnlistener* listener,
 	self->connections.emplace_back(*self, evconnlistener_get_base(self->listener), sock);
 }
 
-opc_ua::tcp::Server::Server(event_base* ev)
+opc_ua::tcp::Server::Server(event_base* ev, AddressSpace& as)
+	: address_space(as)
 {
 	sockaddr_in addr = sockaddr_in();
 
@@ -66,7 +67,7 @@ opc_ua::tcp::Server::Server(event_base* ev)
 opc_ua::CreateSessionResponse opc_ua::tcp::Server::create_session(const CreateSessionRequest& csr)
 {
 	CreateSessionResponse resp;
-	sessions.emplace_back(csr, resp);
+	sessions.emplace_back(*this, csr, resp);
 	return resp;
 }
 
@@ -226,7 +227,7 @@ opc_ua::tcp::ServerMessageStream::~ServerMessageStream()
 
 void opc_ua::tcp::ServerMessageStream::write_message(Response& msg, UInt32 request_id, MessageType msg_type)
 {
-	MemorySerializationBuffer sctx;
+	MemorySerializationBuffer headers, body;
 	BinarySerializer srl;
 
 	// OPN message takes asymmetric header
@@ -238,30 +239,54 @@ void opc_ua::tcp::ServerMessageStream::write_message(Response& msg, UInt32 reque
 			.sender_certificate = "",
 			.receiver_certificate_thumbprint = "",
 		};
-		srl.serialize(sctx, sech);
+		srl.serialize(headers, sech);
 	}
 	else
 	{
 		SymmetricAlgorithmSecurityHeader sech = {
 			.token_id = token_id,
 		};
-		srl.serialize(sctx, sech);
+		srl.serialize(headers, sech);
 	}
 
 	SequenceHeader seqh = {
 		.sequence_number = sequence_number++,
 		.request_id = request_id,
 	};
-	srl.serialize(sctx, seqh);
 
 	NodeId msg_id(id_mapping.at(msg.get_node_id()));
-	srl.serialize(sctx, msg_id);
+	srl.serialize(body, msg_id);
 
-	// fill request header in
+	// fill response header in
 	msg.response_header.timestamp = DateTime::now();
-	srl.serialize(sctx, msg);
+	srl.serialize(body, msg);
 
-	ts.write_message(msg_type, MessageIsFinal::FINAL, sctx, secure_channel_id);
+	// message splitting support
+	size_t max_chunk_size = ts.remote_limits.receive_buffer_size
+		- SecureConversationMessageHeader::serialized_length
+		- SequenceHeader::serialized_length
+		- headers.size();
+
+	std::vector<Byte> headers_copy(headers.size());
+	headers.read(headers_copy.data(), headers_copy.size());
+
+	while (1)
+	{
+		MemorySerializationBuffer buf;
+
+		buf.write(headers_copy.data(), headers_copy.size());
+		srl.serialize(buf, seqh);
+		buf.move(body, max_chunk_size);
+
+		ts.write_message(msg_type,
+				body.size() > 0 ? MessageIsFinal::INTERMEDIATE : MessageIsFinal::FINAL,
+				buf, secure_channel_id);
+
+		if (body.size() == 0)
+			break;
+
+		seqh.sequence_number = sequence_number++;
+	}
 }
 
 void opc_ua::tcp::ServerMessageStream::process_secure_channel_request(ReadableSerializationBuffer& sctx, UInt32 channel_id)
@@ -396,6 +421,30 @@ void opc_ua::tcp::ServerMessageStream::handle_message(MessageHeader& h, Readable
 					break;
 				}
 
+				// TODO: move to ServerSessionStream
+				case ReadRequest::NODE_ID:
+				{
+					const ReadRequest& rr = *dynamic_cast<ReadRequest*>(req.get());
+					ReadResponse resp;
+
+					resp.response_header.request_handle = rr.request_header.request_handle;
+					resp.response_header.service_result = 0;
+					resp.results.resize(rr.nodes_to_read.size());
+
+					for (auto& r : rr.nodes_to_read)
+					{
+						BaseNode& n = server.address_space.get_node(r.node_id);
+						// TODO: index_range, data_encoding
+
+						resp.results[0].flags = static_cast<Byte>(DataValueFlags::VALUE_SPECIFIED);
+						resp.results[0].value = n.get_attribute(static_cast<AttributeId>(r.attribute_id),
+									attached_session->session);
+					}
+
+					write_message(resp, seqh.request_id);
+					break;
+				}
+
 				default:
 					assert(not_reached);
 			}
@@ -408,8 +457,8 @@ void opc_ua::tcp::ServerMessageStream::handle_message(MessageHeader& h, Readable
 	}
 }
 
-opc_ua::tcp::ServerSessionStream::ServerSessionStream(const CreateSessionRequest& csr, CreateSessionResponse& resp)
-	: secure_channel(nullptr), session_name(csr.session_name),
+opc_ua::tcp::ServerSessionStream::ServerSessionStream(Server& serv, const CreateSessionRequest& csr, CreateSessionResponse& resp)
+	: server(serv), secure_channel(nullptr), session_name(csr.session_name),
 	session_id(GUID::random_guid(), server_namespace_index),
 	authentication_token(GUID::random_guid(), server_namespace_index)
 {
@@ -439,4 +488,14 @@ void opc_ua::tcp::ServerSessionStream::attach(ServerMessageStream& ms, const Act
 void opc_ua::tcp::ServerSessionStream::write_message(Response& msg, UInt32 request_id)
 {
 	secure_channel->write_message(msg, request_id);
+}
+
+void opc_ua::AddressSpace::add_node(const std::shared_ptr<BaseNode>& n)
+{
+	nodes.emplace(n.get()->node_id(), n);
+}
+
+opc_ua::BaseNode& opc_ua::AddressSpace::get_node(const NodeId& n)
+{
+	return *nodes.at(n).get();
 }
