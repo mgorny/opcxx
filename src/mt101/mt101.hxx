@@ -12,7 +12,7 @@
 
 namespace mt101
 {
-	struct consts
+	namespace consts
 	{
 		// lengths of basic memory regions
 		// used to construct internal buffers
