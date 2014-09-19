@@ -53,7 +53,10 @@ void refetch_if_old(time_t max_age) // [ms]
 	int_least16_t max_age_ms = max_age % 1000;
 
 	if (sec_diff > max_age_sec || (sec_diff == max_age_sec && ms_diff > max_age_ms))
+	{
 		mt.fetch();
+		last_fetched = curr_time;
+	}
 }
 
 class MT101Variable : public opc_ua::Variable
