@@ -17,6 +17,7 @@
 #include <sys/socket.h>
 
 #include <cassert>
+#include <ctime>
 #include <iomanip>
 #include <iostream>
 #include <stdexcept>
@@ -24,6 +25,7 @@
 opc_ua::tcp::BinarySerializer srl;
 
 mt101::MT101 mt;
+struct timespec last_fetched = {0, 0};
 
 template <class T>
 struct null_deleter
@@ -33,18 +35,25 @@ struct null_deleter
 	}
 };
 
-time_t get_mt101_rtc_time(mt101::MT101 mt)
+void refetch_if_old(time_t max_age) // [ms]
 {
-	struct tm t;
+	struct timespec curr_time;
+	if (clock_gettime(CLOCK_MONOTONIC, &curr_time))
+		throw std::runtime_error("clock_gettime() failed");
 
-	t.tm_sec = mt.get_analog_input_value(mt101::consts::RTC_Sec);
-	t.tm_min = mt.get_analog_input_value(mt101::consts::RTC_Min);
-	t.tm_hour = mt.get_analog_input_value(mt101::consts::RTC_Hour);
+	// TODO: think this through
+	// need to care for negative diff(tv_nsec)
+	if ((curr_time.tv_sec - last_fetched.tv_sec > max_age / 1000)
+			|| ((curr_time.tv_nsec - last_fetched.tv_nsec) / 1E6) > max_age % 1000)
+		mt.fetch();
 }
 
 class MT101Variable : public opc_ua::Variable
 {
 	std::string my_node_id, my_desc;
+
+protected:
+	static time_t max_age;
 
 public:
 	MT101Variable(const std::string& node_id, const std::string& desc)
@@ -112,6 +121,8 @@ public:
 		return false;
 	}
 };
+ 
+time_t MT101Variable::max_age = 1000;
 
 class MT101BinaryInput : public MT101Variable
 {
@@ -125,7 +136,7 @@ public:
 
 	virtual opc_ua::Variant value(opc_ua::Session& s)
 	{
-		mt.fetch();
+		refetch_if_old(max_age);
 
 		return mt.get_binary_input_state(my_off);
 	}
@@ -143,7 +154,7 @@ public:
 
 	virtual opc_ua::Variant value(opc_ua::Session& s)
 	{
-		mt.fetch();
+		refetch_if_old(max_age);
 
 		return mt.get_binary_output_state(my_off);
 	}
@@ -161,7 +172,7 @@ public:
 
 	virtual opc_ua::Variant value(opc_ua::Session& s)
 	{
-		mt.fetch();
+		refetch_if_old(max_age);
 
 		return mt.get_analog_input_value(my_off);
 	}
