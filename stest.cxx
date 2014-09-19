@@ -41,10 +41,18 @@ void refetch_if_old(time_t max_age) // [ms]
 	if (clock_gettime(CLOCK_MONOTONIC, &curr_time))
 		throw std::runtime_error("clock_gettime() failed");
 
-	// TODO: think this through
-	// need to care for negative diff(tv_nsec)
-	if ((curr_time.tv_sec - last_fetched.tv_sec > max_age / 1000)
-			|| ((curr_time.tv_nsec - last_fetched.tv_nsec) / 1E6) > max_age % 1000)
+	time_t sec_diff = curr_time.tv_sec - last_fetched.tv_sec;
+	int_least16_t ms_diff = (curr_time.tv_nsec - last_fetched.tv_nsec) / 1E6;
+	if (ms_diff < 0)
+	{
+		ms_diff += 1000;
+		--sec_diff;
+	}
+
+	time_t max_age_sec = max_age / 1000;
+	int_least16_t max_age_ms = max_age % 1000;
+
+	if (sec_diff > max_age_sec || (sec_diff == max_age_sec && ms_diff > max_age_ms))
 		mt.fetch();
 }
 
