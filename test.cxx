@@ -14,10 +14,15 @@
 
 #include <sys/socket.h>
 
+#include <array>
 #include <cassert>
 #include <iomanip>
 #include <iostream>
 #include <stdexcept>
+
+std::array<const char*, 8> digital_inputs{"I1", "I2", "I3", "I4", "I5", "I6", "I7", "I8"};
+std::array<const char*, 8> digital_outputs{"Q1", "Q2", "Q3", "Q4", "Q5", "Q6", "Q7", "Q8"};
+std::array<const char*, 2> analog_inputs{"AN1", "AN2"};
 
 std::string endpoint("opc.tcp://127.0.0.1:6001/sampleuaserver");
 opc_ua::tcp::BinarySerializer srl;
@@ -37,6 +42,63 @@ struct timer_callback_data
 	std::unique_ptr<event, event_deleter> timer_event;
 };
 
+static int line_counter = 0;
+static const char* color_reset = "\e[0m";
+static const char* color_red = "\e[31m";
+static const char* color_green = "\e[32m";
+static const char* color_brown = "\e[33m";
+
+static void response_handler(std::unique_ptr<opc_ua::Response> msg, void* data)
+{
+	timer_callback_data* cb_data = static_cast<timer_callback_data*>(data);
+	opc_ua::ReadResponse* rsp = dynamic_cast<opc_ua::ReadResponse*>(msg.get());
+
+	int i = 0;
+
+	if (!(line_counter++ % 20))
+	{
+		std::cout << "\n"
+			" Digital inputs | Digital outputs | Analog inputs |\n"
+			"1 2 3 4 5 6 7 8 | 1 2 3 4 5 6 7 8 |   1   |   2   |\n"
+			"----------------+-----------------+-------+-------+\n";
+		line_counter = 1;
+	}
+
+	for (auto v : rsp->results)
+	{
+		// error
+		if (v.flags & static_cast<opc_ua::Byte>(opc_ua::DataValueFlags::STATUS_CODE_SPECIFIED))
+			std::cout << color_brown << "E" << color_reset << std::endl;
+		else
+		{
+			switch (v.value.variant_type)
+			{
+				case opc_ua::VariantType::BOOLEAN:
+					std::cout << (v.value.as_boolean ? color_green : color_red)
+						<< v.value.as_boolean << color_reset;
+					break;
+				case opc_ua::VariantType::UINT16:
+					std::cout << color_green
+						<< std::setw(5) << v.value.as_uint16 << color_reset;
+					break;
+				default:
+					std::cerr << static_cast<int>(v.value.variant_type) << std::endl;
+					throw std::runtime_error("Incorrect value type");
+			}
+		}
+
+		if (i == 7 || i >= 15)
+			std::cout << " | ";
+		else
+			std::cout << " ";
+		++i;
+	}
+	std::cout << std::endl;
+
+	struct timeval timer_delay = {.tv_sec = 2, .tv_usec = 0};
+	event_add(cb_data->timer_event.get(), &timer_delay);
+}
+
 static void timer_handler(int fd, short what, void* data)
 {
 	timer_callback_data* cb_data = static_cast<timer_callback_data*>(data);
@@ -45,19 +107,27 @@ static void timer_handler(int fd, short what, void* data)
 	opc_ua::ReadRequest rvr;
 	rvr.max_age = 0;
 	rvr.timestamps_to_return = opc_ua::TimestampsToReturn::SERVER;
-	rvr.nodes_to_read.emplace_back();
-	rvr.nodes_to_read[0].node_id = opc_ua::NodeId("I1", 1);
-	rvr.nodes_to_read[0].attribute_id = static_cast<opc_ua::UInt32>(opc_ua::AttributeId::VALUE);
-	self.write_message(rvr, [] (std::unique_ptr<opc_ua::Response> msg, void* data)
-		{
-			timer_callback_data* cb_data = static_cast<timer_callback_data*>(data);
 
-			opc_ua::ReadResponse* rsp = dynamic_cast<opc_ua::ReadResponse*>(msg.get());
-			std::cout << "I1: " << rsp->results[0].value.as_boolean << std::endl;
+	for (const char* node_name : digital_inputs)
+	{
+		rvr.nodes_to_read.emplace_back();
+		rvr.nodes_to_read.back().node_id = opc_ua::NodeId(node_name, 1);
+		rvr.nodes_to_read.back().attribute_id = static_cast<opc_ua::UInt32>(opc_ua::AttributeId::VALUE);
+	}
+	for (const char* node_name : digital_outputs)
+	{
+		rvr.nodes_to_read.emplace_back();
+		rvr.nodes_to_read.back().node_id = opc_ua::NodeId(node_name, 1);
+		rvr.nodes_to_read.back().attribute_id = static_cast<opc_ua::UInt32>(opc_ua::AttributeId::VALUE);
+	}
+	for (const char* node_name : analog_inputs)
+	{
+		rvr.nodes_to_read.emplace_back();
+		rvr.nodes_to_read.back().node_id = opc_ua::NodeId(node_name, 1);
+		rvr.nodes_to_read.back().attribute_id = static_cast<opc_ua::UInt32>(opc_ua::AttributeId::VALUE);
+	}
 
-			struct timeval timer_delay = {.tv_sec = 2, .tv_usec = 0};
-			event_add(cb_data->timer_event.get(), &timer_delay);
-		}, data);
+	self.write_message(rvr, response_handler, data);
 
 	//ns=2;'sampleBuilding'
 }

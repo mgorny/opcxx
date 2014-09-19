@@ -200,6 +200,8 @@ void opc_ua::tcp::TransportStream::write_message(MessageType msg_type, MessageIs
 	}
 
 	out_ctx.move(msg);
+
+	bufferevent_flush(bev, EV_WRITE, BEV_FLUSH);
 }
 
 void opc_ua::tcp::TransportStream::add_secure_channel(MessageStream& ms)

@@ -214,6 +214,8 @@ void opc_ua::tcp::ServerTransportStream::write_message(MessageType msg_type, Mes
 	}
 
 	out_ctx.move(msg);
+
+	bufferevent_flush(bev, EV_WRITE, BEV_FLUSH);
 }
 
 opc_ua::tcp::ServerMessageStream::ServerMessageStream(Server& serv, ServerTransportStream& new_ts)
@@ -431,13 +433,16 @@ void opc_ua::tcp::ServerMessageStream::handle_message(MessageHeader& h, Readable
 					resp.response_header.service_result = 0;
 					resp.results.resize(rr.nodes_to_read.size());
 
-					for (auto& r : rr.nodes_to_read)
+					for (size_t i = 0; i < rr.nodes_to_read.size(); ++i)
 					{
+						auto& r = rr.nodes_to_read[i];
+						auto& res = resp.results[i];
+
 						BaseNode& n = server.address_space.get_node(r.node_id);
 						// TODO: index_range, data_encoding
 
-						resp.results[0].flags = static_cast<Byte>(DataValueFlags::VALUE_SPECIFIED);
-						resp.results[0].value = n.get_attribute(static_cast<AttributeId>(r.attribute_id),
+						res.flags = static_cast<Byte>(DataValueFlags::VALUE_SPECIFIED);
+						res.value = n.get_attribute(static_cast<AttributeId>(r.attribute_id),
 									attached_session->session);
 					}
 
