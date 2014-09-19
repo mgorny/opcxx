@@ -443,7 +443,7 @@ void opc_ua::tcp::ServerMessageStream::handle_message(MessageHeader& h, Readable
 
 						res.flags = static_cast<Byte>(DataValueFlags::VALUE_SPECIFIED);
 						res.value = n.get_attribute(static_cast<AttributeId>(r.attribute_id),
-									attached_session->session);
+									attached_session->session, rr.max_age);
 					}
 
 					write_message(resp, seqh.request_id);

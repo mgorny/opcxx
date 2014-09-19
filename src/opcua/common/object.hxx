@@ -54,33 +54,33 @@ namespace opc_ua
 		virtual NodeId node_id() = 0;
 		virtual NodeClass node_class() = 0;
 		virtual QualifiedName browse_name() = 0;
-		virtual LocalizedText display_name(Session& s) = 0;
-		virtual LocalizedText description(Session& s);
-		virtual UInt32 write_mask(Session& s) = 0;
-		virtual UInt32 user_write_mask(Session& s) = 0;
+		virtual LocalizedText display_name(Session& s, Double max_age) = 0;
+		virtual LocalizedText description(Session& s, Double max_age);
+		virtual UInt32 write_mask(Session& s, Double max_age) = 0;
+		virtual UInt32 user_write_mask(Session& s, Double max_age) = 0;
 
-		virtual Variant get_attribute(AttributeId a, Session& s);
+		virtual Variant get_attribute(AttributeId a, Session& s, Double max_age);
 	};
 
 	struct Variable : BaseNode
 	{
 		// variables
-		virtual Variant value(Session& s) = 0;
-		virtual NodeId data_type(Session& s) = 0;
-		virtual Int32 value_rank(Session& s) = 0;
-		virtual Array<UInt32> array_dimensions(Session& s) = 0;
-		virtual Byte access_level(Session& s) = 0;
-		virtual Byte user_access_level(Session& s) = 0;
-		virtual Double minimum_sampling_interval(Session& s);
-		virtual Boolean historizing(Session& s) = 0;
+		virtual Variant value(Session& s, Double max_age) = 0;
+		virtual NodeId data_type(Session& s, Double max_age) = 0;
+		virtual Int32 value_rank(Session& s, Double max_age) = 0;
+		virtual Array<UInt32> array_dimensions(Session& s, Double max_age) = 0;
+		virtual Byte access_level(Session& s, Double max_age) = 0;
+		virtual Byte user_access_level(Session& s, Double max_age) = 0;
+		virtual Double minimum_sampling_interval(Session& s, Double max_age);
+		virtual Boolean historizing(Session& s, Double max_age) = 0;
 
-		virtual Variant get_attribute(AttributeId a, Session& s);
+		virtual Variant get_attribute(AttributeId a, Session& s, Double max_age);
 	};
 
 	struct Object : BaseNode
 	{
 		// variables
-		virtual Byte event_notifier(Session& s) = 0;
+		virtual Byte event_notifier(Session& s, Double max_age) = 0;
 	};
 };
 

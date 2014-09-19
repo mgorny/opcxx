@@ -60,9 +60,6 @@ class MT101Variable : public opc_ua::Variable
 {
 	std::string my_node_id, my_desc;
 
-protected:
-	static time_t max_age;
-
 public:
 	MT101Variable(const std::string& node_id, const std::string& desc)
 		: my_node_id(node_id), my_desc(desc)
@@ -84,54 +81,52 @@ public:
 		return {my_node_id, 1};
 	}
 
-	virtual opc_ua::LocalizedText display_name(opc_ua::Session& s)
+	virtual opc_ua::LocalizedText display_name(opc_ua::Session& s, opc_ua::Double max_age)
 	{
 		return {"en", my_desc};
 	}
 
-	virtual opc_ua::UInt32 write_mask(opc_ua::Session& s)
+	virtual opc_ua::UInt32 write_mask(opc_ua::Session& s, opc_ua::Double max_age)
 	{
 		return 0;
 	}
 
-	virtual opc_ua::UInt32 user_write_mask(opc_ua::Session& s)
+	virtual opc_ua::UInt32 user_write_mask(opc_ua::Session& s, opc_ua::Double max_age)
 	{
 		return 0;
 	}
 
-	virtual opc_ua::NodeId data_type(opc_ua::Session& s)
+	virtual opc_ua::NodeId data_type(opc_ua::Session& s, opc_ua::Double max_age)
 	{
 		return {};
 	}
 
-	virtual opc_ua::Int32 value_rank(opc_ua::Session& s)
+	virtual opc_ua::Int32 value_rank(opc_ua::Session& s, opc_ua::Double max_age)
 	{
 		return -1;
 	}
 
-	virtual opc_ua::Array<opc_ua::UInt32> array_dimensions(opc_ua::Session& s)
+	virtual opc_ua::Array<opc_ua::UInt32> array_dimensions(opc_ua::Session& s, opc_ua::Double max_age)
 	{
 		return {};
 	}
 
-	virtual opc_ua::Byte access_level(opc_ua::Session& s)
+	virtual opc_ua::Byte access_level(opc_ua::Session& s, opc_ua::Double max_age)
 	{
 		return 1;
 	}
 
-	virtual opc_ua::Byte user_access_level(opc_ua::Session& s)
+	virtual opc_ua::Byte user_access_level(opc_ua::Session& s, opc_ua::Double max_age)
 	{
 		return 1;
 	}
 
-	virtual opc_ua::Boolean historizing(opc_ua::Session& s)
+	virtual opc_ua::Boolean historizing(opc_ua::Session& s, opc_ua::Double max_age)
 	{
 		return false;
 	}
 };
  
-time_t MT101Variable::max_age = 1000;
-
 class MT101BinaryInput : public MT101Variable
 {
 	size_t my_off;
@@ -142,7 +137,7 @@ public:
 	{
 	}
 
-	virtual opc_ua::Variant value(opc_ua::Session& s)
+	virtual opc_ua::Variant value(opc_ua::Session& s, opc_ua::Double max_age)
 	{
 		refetch_if_old(max_age);
 
@@ -160,7 +155,7 @@ public:
 	{
 	}
 
-	virtual opc_ua::Variant value(opc_ua::Session& s)
+	virtual opc_ua::Variant value(opc_ua::Session& s, opc_ua::Double max_age)
 	{
 		refetch_if_old(max_age);
 
@@ -178,7 +173,7 @@ public:
 	{
 	}
 
-	virtual opc_ua::Variant value(opc_ua::Session& s)
+	virtual opc_ua::Variant value(opc_ua::Session& s, opc_ua::Double max_age)
 	{
 		refetch_if_old(max_age);
 

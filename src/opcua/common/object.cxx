@@ -9,12 +9,12 @@
 
 #include "object.hxx"
 
-opc_ua::LocalizedText opc_ua::BaseNode::description(Session& s)
+opc_ua::LocalizedText opc_ua::BaseNode::description(Session& s, Double max_age)
 {
 	return {"", ""};
 }
 
-opc_ua::Variant opc_ua::BaseNode::get_attribute(AttributeId a, Session& s)
+opc_ua::Variant opc_ua::BaseNode::get_attribute(AttributeId a, Session& s, Double max_age)
 {
 	switch (a)
 	{
@@ -23,19 +23,19 @@ opc_ua::Variant opc_ua::BaseNode::get_attribute(AttributeId a, Session& s)
 	}
 }
 
-opc_ua::Double opc_ua::Variable::minimum_sampling_interval(Session& s)
+opc_ua::Double opc_ua::Variable::minimum_sampling_interval(Session& s, Double max_age)
 {
 	// indeterminate
 	return -1;
 }
 
-opc_ua::Variant opc_ua::Variable::get_attribute(AttributeId a, Session& s)
+opc_ua::Variant opc_ua::Variable::get_attribute(AttributeId a, Session& s, Double max_age)
 {
 	switch (a)
 	{
 		case AttributeId::VALUE:
-			return value(s);
+			return value(s, max_age);
 		default:
-			return BaseNode::get_attribute(a, s);
+			return BaseNode::get_attribute(a, s, max_age);
 	}
 }

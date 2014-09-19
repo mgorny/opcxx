@@ -105,7 +105,7 @@ static void timer_handler(int fd, short what, void* data)
 	opc_ua::tcp::SessionStream& self = cb_data->session_stream;
 
 	opc_ua::ReadRequest rvr;
-	rvr.max_age = 0;
+	rvr.max_age = 1500;
 	rvr.timestamps_to_return = opc_ua::TimestampsToReturn::SERVER;
 
 	for (const char* node_name : digital_inputs)
