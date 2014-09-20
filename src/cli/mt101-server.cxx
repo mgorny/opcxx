@@ -1,3 +1,8 @@
+/* Simple OPC UA server controlling MT-101
+ * (c) 2014 Michał Górny
+ * Licensed under the terms of the 2-clause BSD license
+ */
+
 #ifdef HAVE_CONFIG_H
 #	include "config.h"
 #endif
@@ -43,24 +48,17 @@ struct event_deleter
 	}
 };
 
-void refetch_if_old(time_t max_age) // [ms]
+void refetch_if_old(double max_age) // [ms]
 {
 	struct timespec curr_time;
 	if (clock_gettime(CLOCK_MONOTONIC, &curr_time))
 		throw std::runtime_error("clock_gettime() failed");
 
-	time_t sec_diff = curr_time.tv_sec - last_fetched.tv_sec;
-	int_least16_t ms_diff = (curr_time.tv_nsec - last_fetched.tv_nsec) / 1E6;
-	if (ms_diff < 0)
-	{
-		ms_diff += 1000;
-		--sec_diff;
-	}
+	double ms_diff
+		= (curr_time.tv_sec - last_fetched.tv_sec) * 1E3
+		+ (curr_time.tv_nsec - last_fetched.tv_nsec) / 1E6;
 
-	time_t max_age_sec = max_age / 1000;
-	int_least16_t max_age_ms = max_age % 1000;
-
-	if (sec_diff > max_age_sec || (sec_diff == max_age_sec && ms_diff > max_age_ms))
+	if (ms_diff > max_age)
 	{
 		mt.fetch();
 		last_fetched = curr_time;

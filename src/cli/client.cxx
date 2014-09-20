@@ -1,3 +1,8 @@
+/* Simple OPC UA-controlled MT101 client
+ * (c) 2014 Michał Górny
+ * Licensed under the terms of the 2-clause BSD license
+ */
+
 #ifdef HAVE_CONFIG_H
 #	include "config.h"
 #endif

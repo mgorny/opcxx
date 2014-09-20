@@ -44,7 +44,7 @@ void opc_ua::tcp::Server::handle_connection(evconnlistener* listener,
 {
 	Server* self = static_cast<Server*>(data);
 
-	self->connections.emplace_back(*self, evconnlistener_get_base(self->listener), sock);
+	self->connections.emplace_front(*self, evconnlistener_get_base(self->listener), sock);
 }
 
 opc_ua::tcp::Server::Server(event_base* ev, AddressSpace& as)
@@ -67,7 +67,7 @@ opc_ua::tcp::Server::Server(event_base* ev, AddressSpace& as)
 opc_ua::CreateSessionResponse opc_ua::tcp::Server::create_session(const CreateSessionRequest& csr)
 {
 	CreateSessionResponse resp;
-	sessions.emplace_back(*this, csr, resp);
+	sessions.emplace_front(*this, csr, resp);
 	return resp;
 }
 
@@ -84,6 +84,11 @@ opc_ua::tcp::ServerSessionStream& opc_ua::tcp::Server::activate_session(const Ac
 	}
 
 	throw std::runtime_error("Attempt to activate non-existing session");
+}
+
+void opc_ua::tcp::Server::handle_disconnect(ServerTransportStream* s)
+{
+	connections.remove_if([s] (const ServerTransportStream& ls) {return &ls == s;});
 }
 
 void opc_ua::tcp::ServerTransportStream::read_handler(bufferevent* bev, void* ctx)
@@ -174,8 +179,10 @@ void opc_ua::tcp::ServerTransportStream::read_handler(bufferevent* bev, void* ct
 
 void opc_ua::tcp::ServerTransportStream::event_handler(bufferevent* bev, short what, void* ctx)
 {
+	ServerTransportStream* s = static_cast<ServerTransportStream*>(ctx);
+
 	if (what & BEV_EVENT_EOF)
-		throw std::runtime_error("Server transport stream disconnected");
+		s->server.handle_disconnect(s);
 	if (what & BEV_EVENT_ERROR)
 		throw std::runtime_error("Server transport stream error");
 }
@@ -225,6 +232,8 @@ opc_ua::tcp::ServerMessageStream::ServerMessageStream(Server& serv, ServerTransp
 
 opc_ua::tcp::ServerMessageStream::~ServerMessageStream()
 {
+	if (attached_session)
+		attached_session->detach();
 }
 
 void opc_ua::tcp::ServerMessageStream::write_message(Response& msg, UInt32 request_id, MessageType msg_type)
@@ -513,6 +522,11 @@ void opc_ua::tcp::ServerSessionStream::attach(ServerMessageStream& ms, const Act
 	resp.results.push_back(0);
 
 	write_message(resp, request_id);
+}
+
+void opc_ua::tcp::ServerSessionStream::detach()
+{
+	secure_channel = nullptr;
 }
 
 void opc_ua::tcp::ServerSessionStream::write_message(Response& msg, UInt32 request_id)

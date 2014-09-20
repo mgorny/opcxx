@@ -16,7 +16,7 @@ noinst_HEADERS = \
 	src/mt101/mt101.hxx
 
 lib_LTLIBRARIES = libopcua.la libmt101.la
-noinst_PROGRAMS = test stest
+noinst_PROGRAMS = client mt101-server
 
 libopcua_la_SOURCES = \
 	src/opcua/common/object.cxx \
@@ -43,24 +43,24 @@ libmt101_la_CPPFLAGS = \
 libmt101_la_LIBADD = \
 	$(LIBMODBUS_LIBS)
 
-test_CPPFLAGS = \
+client_CPPFLAGS = \
 	$(libopcua_la_CPPFLAGS) \
 	$(AM_CPPFLAGS)
-test_LDADD = \
+client_LDADD = \
 	libopcua.la
-test_SOURCES = \
-	test.cxx \
+client_SOURCES = \
+	src/cli/client.cxx \
 	$(noinst_HEADERS)
 
-stest_CPPFLAGS = \
+mt101_server_CPPFLAGS = \
 	$(libopcua_la_CPPFLAGS) \
 	$(libmt101_la_CPPFLAGS) \
 	$(AM_CPPFLAGS)
-stest_LDADD = \
+mt101_server_LDADD = \
 	libmt101.la \
 	libopcua.la
-stest_SOURCES = \
-	stest.cxx \
+mt101_server_SOURCES = \
+	src/cli/mt101-server.cxx \
 	$(noinst_HEADERS)
 
 TESTS = tests/serializer

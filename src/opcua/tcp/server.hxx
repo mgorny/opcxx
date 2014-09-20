@@ -18,7 +18,7 @@
 #include <opcua/common/util.hxx>
 #include <opcua/tcp/types.hxx>
 
-#include <vector>
+#include <forward_list>
 
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -119,12 +119,6 @@ namespace opc_ua
 
 			std::string session_name;
 
-#if 0
-			// internal callbacks
-			static void handle_create_session(std::unique_ptr<Response> msg, void* data);
-			static void handle_activate_session(std::unique_ptr<Response> msg, void* data);
-#endif
-
 		public:
 			Session session;
 
@@ -135,6 +129,7 @@ namespace opc_ua
 			ServerSessionStream(Server& serv, const CreateSessionRequest& csr, CreateSessionResponse& resp);
 
 			void attach(ServerMessageStream& ms, const ActivateSessionRequest& asr, UInt32 request_id);
+			void detach();
 
 			void write_message(Response& msg, UInt32 request_id);
 		};
@@ -146,8 +141,8 @@ namespace opc_ua
 			static void handle_connection(evconnlistener* listener,
 					evutil_socket_t sock, sockaddr* addr, int socklen, void* data);
 
-			std::vector<ServerTransportStream> connections;
-			std::vector<ServerSessionStream> sessions;
+			std::forward_list<ServerTransportStream> connections;
+			std::forward_list<ServerSessionStream> sessions;
 
 		public:
 			AddressSpace& address_space;
@@ -156,6 +151,8 @@ namespace opc_ua
 
 			CreateSessionResponse create_session(const CreateSessionRequest& csr);
 			ServerSessionStream& activate_session(const ActivateSessionRequest& asr, ServerMessageStream& ms, UInt32 request_id);
+
+			void handle_disconnect(ServerTransportStream* ts);
 		};
 	};
 };
