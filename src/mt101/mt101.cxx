@@ -8,6 +8,7 @@
 #include <cassert>
 #include <cerrno>
 #include <stdexcept>
+#include <vector>
 
 mt101::ModbusError::ModbusError(const char* op, int error)
 {
@@ -116,4 +117,48 @@ uint32_t mt101::MT101::get_internal_register_long(size_t addr)
 	assert(addr+1 <= consts::internal_registers_length);
 
 	return _internal_registers[addr] << 16 | _internal_registers[addr+1];
+}
+
+void mt101::MT101::set_binary_output_state(size_t addr, bool new_state)
+{
+	assert(_rtu);
+	assert(addr <= consts::binary_outputs_length);
+
+	write_queue[addr] = new_state;
+}
+
+void mt101::MT101::flush()
+{
+	size_t first_addr = 0, last_addr = 0;
+	std::vector<uint8_t> write_data;
+
+	// write_queue is sorted, so merge consecutive writes into one
+	for (auto& kv : write_queue)
+	{
+		size_t addr = kv.first;
+		bool value = kv.second;
+
+		if (addr - 1 != last_addr)
+		{
+			if (!write_data.empty())
+			{
+				// perform the write
+				modbus_write_bits(_rtu, first_addr, write_data.size(), write_data.data());
+				write_data.clear();
+			}
+
+			first_addr = addr;
+		}
+		last_addr = addr;
+		write_data.push_back(value);
+	}
+
+	if (!write_data.empty())
+	{
+		// perform the write
+		modbus_write_bits(_rtu, first_addr, write_data.size(), write_data.data());
+		write_data.clear();
+	}
+
+	write_queue.clear();
 }

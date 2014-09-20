@@ -35,6 +35,14 @@ struct null_deleter
 	}
 };
 
+struct event_deleter
+{
+	void operator()(event* p)
+	{
+		event_free(p);
+	}
+};
+
 void refetch_if_old(time_t max_age) // [ms]
 {
 	struct timespec curr_time;
@@ -153,6 +161,8 @@ public:
 	}
 };
 
+std::unique_ptr<event, event_deleter> flush_output_event;
+
 class MT101BinaryOutput : public MT101Variable
 {
 	size_t my_off;
@@ -172,6 +182,13 @@ public:
 
 	virtual opc_ua::StatusCode value(opc_ua::Session& s, const opc_ua::Variant& new_value)
 	{
+		if (new_value.variant_type != opc_ua::VariantType::BOOLEAN)
+			throw std::runtime_error("Wrong data type for binary output");
+		mt.set_binary_output_state(my_off, new_value.as_boolean);
+
+		struct timeval zero_time = {0, 0};
+		event_add(flush_output_event.get(), &zero_time);
+
 		return 0;
 	}
 };
@@ -198,6 +215,11 @@ public:
 		return 0;
 	}
 };
+
+static void flush_handler(int fd, short what, void* data)
+{
+	mt.flush();
+}
 
 int main()
 {
@@ -230,6 +252,9 @@ int main()
 	as.add_node(std::make_shared<MT101AnalogInput>("AN2", "analog input 2", mt101::consts::AN2));
 
 	mt.connect();
+
+	// output flusher
+	flush_output_event.reset(evtimer_new(ev, flush_handler, nullptr));
 
 	// main loop
 	event_base_loop(ev, 0);

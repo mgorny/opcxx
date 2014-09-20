@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <array>
 #include <exception>
+#include <map>
 
 #include <modbus.h>
 
@@ -111,6 +112,8 @@ namespace mt101
 		std::array<uint16_t, consts::analog_inputs_length> _analog_inputs;
 		std::array<uint16_t, consts::internal_registers_length> _internal_registers;
 
+		std::map<size_t, bool> write_queue;
+
 	public:
 		MT101();
 		~MT101();
@@ -129,6 +132,12 @@ namespace mt101
 		uint16_t get_analog_input_value(size_t addr);
 		uint16_t get_internal_register_value(size_t addr);
 		uint32_t get_internal_register_long(size_t addr);
+
+		// Write data onto the queue.
+		void set_binary_output_state(size_t addr, bool new_state);
+
+		// Flush queued writes onto MT101.
+		void flush();
 	};
 };
 
