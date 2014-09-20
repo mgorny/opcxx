@@ -129,7 +129,7 @@ public:
 		return false;
 	}
 };
- 
+
 class MT101BinaryInput : public MT101Variable
 {
 	size_t my_off;
@@ -145,6 +145,11 @@ public:
 		refetch_if_old(max_age);
 
 		return mt.get_binary_input_state(my_off);
+	}
+
+	virtual opc_ua::StatusCode value(opc_ua::Session& s, const opc_ua::Variant& new_value)
+	{
+		return 0;
 	}
 };
 
@@ -164,6 +169,11 @@ public:
 
 		return mt.get_binary_output_state(my_off);
 	}
+
+	virtual opc_ua::StatusCode value(opc_ua::Session& s, const opc_ua::Variant& new_value)
+	{
+		return 0;
+	}
 };
 
 class MT101AnalogInput : public MT101Variable
@@ -181,6 +191,11 @@ public:
 		refetch_if_old(max_age);
 
 		return mt.get_analog_input_value(my_off);
+	}
+
+	virtual opc_ua::StatusCode value(opc_ua::Session& s, const opc_ua::Variant& new_value)
+	{
+		return 0;
 	}
 };
 

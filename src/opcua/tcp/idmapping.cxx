@@ -39,6 +39,9 @@ const opc_ua::tcp::NodeIdMappingType opc_ua::tcp::id_mapping{
 	{ReadValueId::NODE_ID, 628},
 	{ReadRequest::NODE_ID, 631},
 	{ReadResponse::NODE_ID, 634},
+	{WriteValue::NODE_ID, 670},
+	{WriteRequest::NODE_ID, 673},
+	{WriteResponse::NODE_ID, 676},
 };
 
 class reverse_map_iterator : public opc_ua::tcp::NodeIdMappingType::const_iterator

@@ -567,6 +567,52 @@ namespace opc_ua
 
 		virtual UInt32 get_node_id() const { return NODE_ID; }
 	};
+
+	struct WriteValue : Struct
+	{
+		static constexpr UInt32 NODE_ID = 668;
+
+		NodeId node_id;
+		UInt32 attribute_id;
+		String index_range;
+		DataValue value;
+
+		WriteValue();
+
+		// metadata
+		virtual void serialize(WritableSerializationBuffer& ctx, Serializer& s) const;
+		virtual void unserialize(ReadableSerializationBuffer& ctx, Serializer& s);
+		virtual UInt32 get_node_id() const { return NODE_ID; }
+	};
+
+	struct WriteRequest : Request
+	{
+		static constexpr UInt32 NODE_ID = 671;
+
+		Array<WriteValue> nodes_to_write;
+
+		WriteRequest();
+
+		// metadata
+		virtual void serialize(WritableSerializationBuffer& ctx, Serializer& s) const;
+		virtual void unserialize(ReadableSerializationBuffer& ctx, Serializer& s);
+		virtual UInt32 get_node_id() const { return NODE_ID; }
+	};
+
+	struct WriteResponse : Response
+	{
+		static constexpr UInt32 NODE_ID = 674;
+
+		Array<StatusCode> results;
+		Array<DiagnosticInfo> diagnostic_infos;
+
+		WriteResponse();
+
+		// metadata
+		virtual void serialize(WritableSerializationBuffer& ctx, Serializer& s) const;
+		virtual void unserialize(ReadableSerializationBuffer& ctx, Serializer& s);
+		virtual UInt32 get_node_id() const { return NODE_ID; }
+	};
 };
 
 #endif /*OPCUA_COMMON_STRUCT_HXX*/

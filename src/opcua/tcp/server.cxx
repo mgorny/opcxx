@@ -450,6 +450,31 @@ void opc_ua::tcp::ServerMessageStream::handle_message(MessageHeader& h, Readable
 					break;
 				}
 
+				case WriteRequest::NODE_ID:
+				{
+					const WriteRequest& wr = *dynamic_cast<WriteRequest*>(req.get());
+					WriteResponse resp;
+
+					resp.response_header.request_handle = wr.request_header.request_handle;
+					resp.response_header.service_result = 0;
+					resp.results.resize(wr.nodes_to_write.size());
+
+					for (size_t i = 0; i < wr.nodes_to_write.size(); ++i)
+					{
+						auto& r = wr.nodes_to_write[i];
+						auto& res = resp.results[i];
+
+						BaseNode& n = server.address_space.get_node(r.node_id);
+						// TODO: index_range, data_encoding
+
+						res = n.set_attribute(static_cast<AttributeId>(r.attribute_id),
+								attached_session->session, r.value.value);
+					}
+
+					write_message(resp, seqh.request_id);
+					break;
+				}
+
 				default:
 					assert(not_reached);
 			}

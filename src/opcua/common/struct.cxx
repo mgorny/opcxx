@@ -52,6 +52,9 @@ const opc_ua::StructConstructorMap opc_ua::struct_constructors{
 	M<TranslateBrowsePathsToNodeIdsRequest>(),
 	M<UserIdentityToken>(),
 	M<UserTokenPolicy>(),
+	M<WriteRequest>(),
+	M<WriteResponse>(),
+	M<WriteValue>(),
 };
 
 opc_ua::RequestHeader::RequestHeader()
@@ -720,4 +723,61 @@ void opc_ua::UserIdentityToken::unserialize(ReadableSerializationBuffer& ctx, Se
 opc_ua::AnonymousIdentityToken::AnonymousIdentityToken()
 	: UserIdentityToken("anonPolicy")
 {
+}
+
+opc_ua::WriteValue::WriteValue()
+	: node_id(), attribute_id(0), index_range(), value()
+{
+}
+
+void opc_ua::WriteValue::serialize(WritableSerializationBuffer& ctx, Serializer& s) const
+{
+	s.serialize(ctx, node_id);
+	s.serialize(ctx, attribute_id);
+	s.serialize(ctx, index_range);
+	s.serialize(ctx, value);
+}
+
+void opc_ua::WriteValue::unserialize(ReadableSerializationBuffer& ctx, Serializer& s)
+{
+	s.unserialize(ctx, node_id);
+	s.unserialize(ctx, attribute_id);
+	s.unserialize(ctx, index_range);
+	s.unserialize(ctx, value);
+}
+
+opc_ua::WriteRequest::WriteRequest()
+	: nodes_to_write()
+{
+}
+
+void opc_ua::WriteRequest::serialize(WritableSerializationBuffer& ctx, Serializer& s) const
+{
+	s.serialize(ctx, request_header);
+	s.serialize(ctx, ArraySerialization<WriteValue>(nodes_to_write));
+}
+
+void opc_ua::WriteRequest::unserialize(ReadableSerializationBuffer& ctx, Serializer& s)
+{
+	s.unserialize(ctx, request_header);
+	s.unserialize(ctx, ArrayUnserialization<WriteValue>(nodes_to_write));
+}
+
+opc_ua::WriteResponse::WriteResponse()
+	: results(), diagnostic_infos()
+{
+}
+
+void opc_ua::WriteResponse::serialize(WritableSerializationBuffer& ctx, Serializer& s) const
+{
+	s.serialize(ctx, response_header);
+	s.serialize(ctx, ArraySerialization<StatusCode>(results));
+	s.serialize(ctx, ArraySerialization<DiagnosticInfo>(diagnostic_infos));
+}
+
+void opc_ua::WriteResponse::unserialize(ReadableSerializationBuffer& ctx, Serializer& s)
+{
+	s.unserialize(ctx, response_header);
+	s.unserialize(ctx, ArrayUnserialization<StatusCode>(results));
+	s.unserialize(ctx, ArrayUnserialization<DiagnosticInfo>(diagnostic_infos));
 }

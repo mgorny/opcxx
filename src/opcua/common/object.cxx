@@ -19,7 +19,16 @@ opc_ua::Variant opc_ua::BaseNode::get_attribute(AttributeId a, Session& s, Doubl
 	switch (a)
 	{
 		default:
-			throw std::runtime_error("Invalid attribute requested");
+			throw std::runtime_error("Unsupported attribute requested");
+	}
+}
+
+opc_ua::StatusCode opc_ua::BaseNode::set_attribute(AttributeId a, Session& s, const Variant& new_value)
+{
+	switch (a)
+	{
+		default:
+			throw std::runtime_error("Unsupported attribute requested");
 	}
 }
 
@@ -37,5 +46,36 @@ opc_ua::Variant opc_ua::Variable::get_attribute(AttributeId a, Session& s, Doubl
 			return value(s, max_age);
 		default:
 			return BaseNode::get_attribute(a, s, max_age);
+	}
+}
+
+opc_ua::StatusCode opc_ua::Variable::set_attribute(AttributeId a, Session& s, const Variant& new_value)
+{
+	switch (a)
+	{
+		case AttributeId::VALUE:
+			return value(s, new_value);
+		default:
+			return BaseNode::set_attribute(a, s, new_value);
+	}
+}
+
+opc_ua::Variant opc_ua::Object::get_attribute(AttributeId a, Session& s, Double max_age)
+{
+	switch (a)
+	{
+		case AttributeId::EVENT_NOTIFIER:
+			return event_notifier(s, max_age);
+		default:
+			return BaseNode::get_attribute(a, s, max_age);
+	}
+}
+
+opc_ua::StatusCode opc_ua::Object::set_attribute(AttributeId a, Session& s, const Variant& new_value)
+{
+	switch (a)
+	{
+		default:
+			return BaseNode::set_attribute(a, s, new_value);
 	}
 }

@@ -25,6 +25,7 @@ namespace opc_ua
 		DESCRIPTION = 5,
 		WRITE_MASK = 6,
 		USER_WRITE_MASK = 7,
+		EVENT_NOTIFIER = 12,
 		VALUE = 13,
 		DATA_TYPE = 14,
 		VALUE_RANK = 15,
@@ -60,6 +61,7 @@ namespace opc_ua
 		virtual UInt32 user_write_mask(Session& s, Double max_age) = 0;
 
 		virtual Variant get_attribute(AttributeId a, Session& s, Double max_age);
+		virtual StatusCode set_attribute(AttributeId a, Session& s, const Variant& new_value);
 	};
 
 	struct Variable : BaseNode
@@ -74,13 +76,20 @@ namespace opc_ua
 		virtual Double minimum_sampling_interval(Session& s, Double max_age);
 		virtual Boolean historizing(Session& s, Double max_age) = 0;
 
+		// setters
+		virtual StatusCode value(Session& s, const Variant& new_value) = 0;
+
 		virtual Variant get_attribute(AttributeId a, Session& s, Double max_age);
+		virtual StatusCode set_attribute(AttributeId a, Session& s, const Variant& new_value);
 	};
 
 	struct Object : BaseNode
 	{
 		// variables
 		virtual Byte event_notifier(Session& s, Double max_age) = 0;
+
+		virtual Variant get_attribute(AttributeId a, Session& s, Double max_age);
+		virtual StatusCode set_attribute(AttributeId a, Session& s, const Variant& new_value);
 	};
 };
 
