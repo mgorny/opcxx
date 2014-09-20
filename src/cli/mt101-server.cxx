@@ -244,8 +244,6 @@ int main()
 	as.add_node(std::make_shared<MT101BinaryOutput>("Q6", "binary output 6", mt101::consts::Q6));
 	as.add_node(std::make_shared<MT101BinaryOutput>("Q7", "binary output 7", mt101::consts::Q7));
 	as.add_node(std::make_shared<MT101BinaryOutput>("Q8", "binary output 8", mt101::consts::Q8));
-	as.add_node(std::make_shared<MT101BinaryOutput>("Q7", "binary output 7", mt101::consts::Q7));
-	as.add_node(std::make_shared<MT101BinaryOutput>("Q8", "binary output 8", mt101::consts::Q8));
 	as.add_node(std::make_shared<MT101AnalogInput>("AN1", "analog input 1", mt101::consts::AN1));
 	as.add_node(std::make_shared<MT101AnalogInput>("AN2", "analog input 2", mt101::consts::AN2));
 

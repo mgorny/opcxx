@@ -9,6 +9,7 @@ AC_PROG_CXX
 dnl 2.0.1 is needed for evbuffers
 PKG_CHECK_MODULES([LIBEVENT], [libevent >= 2.0.1])
 PKG_CHECK_MODULES([LIBMODBUS], [libmodbus])
+PKG_CHECK_MODULES([NCURSES], [ncurses])
 
 LT_INIT([disable-static])
 

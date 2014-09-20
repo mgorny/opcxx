@@ -16,7 +16,7 @@ noinst_HEADERS = \
 	src/mt101/mt101.hxx
 
 lib_LTLIBRARIES = libopcua.la libmt101.la
-noinst_PROGRAMS = client mt101-server
+noinst_PROGRAMS = client mt101-server virtual-server
 
 libopcua_la_SOURCES = \
 	src/opcua/common/object.cxx \
@@ -61,6 +61,17 @@ mt101_server_LDADD = \
 	libopcua.la
 mt101_server_SOURCES = \
 	src/cli/mt101-server.cxx \
+	$(noinst_HEADERS)
+
+virtual_server_CPPFLAGS = \
+	$(libopcua_la_CPPFLAGS) \
+	$(NCURSES_CFLAGS) \
+	$(AM_CPPFLAGS)
+virtual_server_LDADD = \
+	libopcua.la \
+	$(NCURSES_LIBS)
+virtual_server_SOURCES = \
+	src/cli/virtual-server.cxx \
 	$(noinst_HEADERS)
 
 TESTS = tests/serializer
