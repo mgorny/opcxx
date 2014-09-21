@@ -66,6 +66,11 @@ class NCurses
 public:
 	void print_values()
 	{
+		bool any_change
+			= (input_bits != prev_input_bits)
+			|| (output_bits != prev_output_bits)
+			|| (analog_inputs != prev_analog_inputs);
+
 		for (int i = 0; i < 8; ++i)
 		{
 			if (input_bits[i] != prev_input_bits[i])
@@ -103,6 +108,7 @@ public:
 
 			std::string sv = std::to_string(analog_inputs[i]);
 
+			mvaddstr(3, 38 + 8*i, "     ");
 			mvaddstr(3, 38 + 8*i + 5 - sv.size(), sv.c_str());
 		}
 
@@ -111,6 +117,13 @@ public:
 		prev_input_bits = input_bits;
 		prev_output_bits = output_bits;
 		prev_analog_inputs = analog_inputs;
+
+		if (any_change)
+		{
+			// queue another refresh to dim the lights
+			struct timeval some_time = {3, 0};
+			event_add(refresh_event.get(), &some_time);
+		}
 	}
 
 	static void kb_handler(evutil_socket_t fd, short st, void* data)
@@ -203,7 +216,7 @@ public:
 
 		mvaddstr(0, 0, "~~~~~~~~~~~~~~~~ Virtual MT-101 server ~~~~~~~~~~~~~~");
 		mvaddstr(1, 0, "|  Digital inputs | Digital outputs | Analog inputs |");
-		mvaddstr(2, 0, "| 1 2 3 4 5 6 7 8 | Q W E R T Y U I | a 1 z | s 2 x |");
+		mvaddstr(2, 0, "| 1 2 3 4 5 6 7 8 | Q W E R T Y U I | z 1 a | x 2 s |");
 		mvaddstr(3, 0, "|                 |                 |       |       |");
 		mvaddstr(4, 0, "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
 

@@ -321,7 +321,7 @@ void opc_ua::tcp::ServerMessageStream::process_secure_channel_request(ReadableSe
 	if (req.security_mode != MessageSecurityMode::NONE)
 		throw std::runtime_error("Security mode unsupported");
 
-	std::random_device rnd("/dev/random");
+	std::random_device rnd;
 	std::uniform_int_distribution<opc_ua::UInt32> dist;
 
 	secure_channel_id = channel_id;

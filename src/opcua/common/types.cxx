@@ -49,7 +49,7 @@ opc_ua::GUID opc_ua::GUID::random_guid()
 {
 	// based on RFC4122, sect. 4.4
 
-	std::random_device rnd("/dev/random");
+	std::random_device rnd;
 	std::uniform_int_distribution<Byte> dist;
 
 	GUID out;
@@ -124,7 +124,7 @@ bool opc_ua::NodeId::operator!=(const NodeId& other) const
 
 opc_ua::ByteString opc_ua::random_nonce()
 {
-	std::random_device rnd("/dev/random");
+	std::random_device rnd;
 	std::uniform_int_distribution<opc_ua::Byte> dist;
 
 	ByteString ret;

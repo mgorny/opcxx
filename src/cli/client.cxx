@@ -69,9 +69,14 @@ static const char* color_reset = "\e[0m";
 static const char* color_red = "\e[31m";
 static const char* color_green = "\e[32m";
 static const char* color_brown = "\e[33m";
+static const char* attr_bold = "\e[1m";
 
 // pattern used to set outputs
-static std::bitset<8> xor_pattern = 0b00011110;
+static std::bitset<8> xor_pattern = 0b00101110;
+
+static std::bitset<8> input_bits;
+static std::bitset<8> output_bits;
+static std::array<uint16_t, 2> analog_values;
 
 static void response_handler(std::unique_ptr<opc_ua::Response> msg, void* data)
 {
@@ -82,34 +87,45 @@ static void response_handler(std::unique_ptr<opc_ua::Response> msg, void* data)
 
 	if (!(line_counter++ % 20))
 	{
-		std::cout << "\n"
+		std::cerr << "\n"
 			" Digital inputs | Digital outputs | Analog inputs |\n"
 			"1 2 3 4 5 6 7 8 | 1 2 3 4 5 6 7 8 |   1   |   2   |\n"
 			"----------------+-----------------+-------+-------+\n";
 		line_counter = 1;
 	}
 
-	std::bitset<8> input_bits;
-	std::bitset<8> output_bits;
-
 	for (auto v : rsp->results)
 	{
 		// error
 		if (v.flags & static_cast<opc_ua::Byte>(opc_ua::DataValueFlags::STATUS_CODE_SPECIFIED))
-			std::cout << color_brown << "E" << color_reset << std::endl;
+			std::cerr << color_brown << "E" << color_reset << std::endl;
 		else
 		{
 			switch (v.value.variant_type)
 			{
 				case opc_ua::VariantType::BOOLEAN:
 					assert(i < 16);
-					std::cout << (v.value.as_boolean ? color_green : color_red)
+
+					if ((i < 8 && input_bits[i] != v.value.as_boolean)
+							|| (i >= 8 && i < 16 && output_bits[i & 7] != v.value.as_boolean))
+						std::cerr << attr_bold;
+
+					std::cerr << (v.value.as_boolean ? color_green : color_red)
 						<< v.value.as_boolean << color_reset;
 					break;
 				case opc_ua::VariantType::UINT16:
 					assert(i >= 16);
-					std::cout << color_green
-						<< std::setw(5) << v.value.as_uint16 << color_reset;
+
+					if (analog_values[i & 3] != v.value.as_uint16)
+					{
+						std::cerr << attr_bold
+							<< ((analog_values[i & 3] < v.value.as_uint16)
+								? color_green : color_red);
+					}
+					else
+						std::cerr << color_brown;
+
+					std::cerr << std::setw(5) << v.value.as_uint16 << color_reset;
 					break;
 				default:
 					std::cerr << static_cast<int>(v.value.variant_type) << std::endl;
@@ -121,18 +137,22 @@ static void response_handler(std::unique_ptr<opc_ua::Response> msg, void* data)
 			input_bits[i] = v.value.as_boolean;
 		else if (i < 16)
 			output_bits[i & 7] = v.value.as_boolean;
+		else
+			analog_values[i & 3] = v.value.as_uint16;
 
 		if (i == 7 || i >= 15)
-			std::cout << " | ";
+			std::cerr << " | ";
 		else
-			std::cout << " ";
+			std::cerr << " ";
 		++i;
 	}
-	std::cout << std::endl;
+	std::cerr << std::endl;
 
-	input_bits ^= xor_pattern;
-	if (input_bits != output_bits)
-		set_output_bits(cb_data->session_stream, input_bits);
+	std::bitset<8> new_output_bits = input_bits ^ xor_pattern;
+	new_output_bits ^= (analog_values[0] & 0xff0) >> 4;
+	new_output_bits ^= (analog_values[1] & 0xff00) >> 8;
+	if (new_output_bits != output_bits)
+		set_output_bits(cb_data->session_stream, new_output_bits);
 
 	struct timeval timer_delay = {.tv_sec = 2, .tv_usec = 0};
 	event_add(cb_data->timer_event.get(), &timer_delay);
