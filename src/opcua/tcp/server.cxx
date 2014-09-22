@@ -450,9 +450,11 @@ void opc_ua::tcp::ServerMessageStream::handle_message(MessageHeader& h, Readable
 						BaseNode& n = server.address_space.get_node(r.node_id);
 						// TODO: index_range, data_encoding
 
-						res.flags = static_cast<Byte>(DataValueFlags::VALUE_SPECIFIED);
+						res.flags = static_cast<Byte>(DataValueFlags::VALUE_SPECIFIED)
+								| static_cast<Byte>(DataValueFlags::SERVER_TIMESTAMP_SPECIFIED);
 						res.value = n.get_attribute(static_cast<AttributeId>(r.attribute_id),
 									attached_session->session, rr.max_age);
+						res.server_timestamp = DateTime::now();
 					}
 
 					write_message(resp, seqh.request_id);

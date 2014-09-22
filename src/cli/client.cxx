@@ -88,12 +88,13 @@ static void response_handler(std::unique_ptr<opc_ua::Response> msg, void* data)
 	if (!(line_counter++ % 20))
 	{
 		std::cerr << "\n"
-			" Digital inputs | Digital outputs | Analog inputs |\n"
-			"1 2 3 4 5 6 7 8 | 1 2 3 4 5 6 7 8 |   1   |   2   |\n"
-			"----------------+-----------------+-------+-------+\n";
+			"|  Digital inputs | Digital outputs | Analog inputs |      Timestamp      |\n"
+			"| 1 2 3 4 5 6 7 8 | 1 2 3 4 5 6 7 8 |   1   |   2   |                     |\n"
+			"+-----------------+-----------------+-------+-------+---------------------+\n";
 		line_counter = 1;
 	}
 
+	std::cout << "| ";
 	for (auto v : rsp->results)
 	{
 		// error
@@ -146,7 +147,10 @@ static void response_handler(std::unique_ptr<opc_ua::Response> msg, void* data)
 			std::cerr << " ";
 		++i;
 	}
-	std::cerr << std::endl;
+	struct tm* timestamp = localtime(&rsp->response_header.timestamp.ts.tv_sec);
+	char time_buf[20];
+	assert(strftime(time_buf, sizeof(time_buf), "%Y-%m-%d %H:%M:%S", timestamp) != 0);
+	std::cerr << time_buf << " |" << std::endl;
 
 	std::bitset<8> new_output_bits = input_bits ^ xor_pattern;
 	new_output_bits ^= (analog_values[0] & 0xff0) >> 4;
