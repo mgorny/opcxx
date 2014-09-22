@@ -210,9 +210,10 @@ public:
 
 		// enable colors
 		start_color();
-		init_pair(1, COLOR_RED, COLOR_BLACK);
-		init_pair(2, COLOR_GREEN, COLOR_BLACK);
-		init_pair(3, COLOR_YELLOW, COLOR_BLACK);
+		use_default_colors();
+		init_pair(1, COLOR_RED, -1);
+		init_pair(2, COLOR_GREEN, -1);
+		init_pair(3, COLOR_YELLOW, -1);
 
 		mvaddstr(0, 0, "~~~~~~~~~~~~~~~~ Virtual MT-101 server ~~~~~~~~~~~~~~");
 		mvaddstr(1, 0, "|  Digital inputs | Digital outputs | Analog inputs |");
